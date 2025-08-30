@@ -49,6 +49,7 @@ export default function MapView({
 
     // Map click handler
     map.on('click', (e) => {
+      console.log('Map clicked in MapView:', e.latlng.lat, e.latlng.lng);
       onMapClick(e.latlng.lat, e.latlng.lng);
     });
 
@@ -226,8 +227,9 @@ export default function MapView({
   return (
     <div 
       ref={mapRef} 
-      className="w-full h-full"
+      className="w-full h-full relative z-0"
       data-testid="map-container"
+      style={{ position: 'relative' }}
     />
   );
 }

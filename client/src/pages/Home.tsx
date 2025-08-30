@@ -188,7 +188,7 @@ export default function Home() {
       </div>
 
       {/* Map Container */}
-      <div className="pt-20 h-screen">
+      <div className="pt-20 h-screen relative z-0">
         <MapView
           center={currentPosition}
           locations={locations}
