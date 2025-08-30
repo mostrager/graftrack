@@ -81,10 +81,18 @@ export default function Home() {
 
   const handleMapClick = (lat: number, lng: number) => {
     if (isAddingLocation) {
-      // When in adding mode, set the new location position and open panel
+      // When in adding mode, set the new location position (this will show a red marker)
       setNewLocationPosition({ lat, lng });
-      setShowAddPanel(true);
-      setIsAddingLocation(false);
+      // Don't open panel yet - wait for user to confirm
+      toast({
+        title: "Location Marked",
+        description: "Tap 'Save Location' in the panel below to confirm this spot",
+      });
+      // Open the panel after a short delay
+      setTimeout(() => {
+        setShowAddPanel(true);
+        setIsAddingLocation(false);
+      }, 500);
     } else {
       // When not in adding mode, show a toast to prompt user
       toast({
@@ -186,6 +194,7 @@ export default function Home() {
           onMarkerClick={handleMarkerClick}
           isAddingLocation={isAddingLocation}
           userLocation={currentPosition}
+          tempMarkerPosition={newLocationPosition}
         />
       </div>
 

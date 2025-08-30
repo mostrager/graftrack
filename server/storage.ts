@@ -1,4 +1,6 @@
-import { type User, type UpsertUser, type GraffitiLocation, type InsertGraffitiLocation } from "@shared/schema";
+import { users, graffitiLocations, type User, type UpsertUser, type GraffitiLocation, type InsertGraffitiLocation } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -66,6 +68,7 @@ export class MemStorage implements IStorage {
     const location: GraffitiLocation = {
       ...insertLocation,
       id,
+      userId: insertLocation.userId ?? null,
       createdAt: new Date(),
       address: insertLocation.address ?? null,
       description: insertLocation.description ?? null,
@@ -97,4 +100,83 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async getGraffitiLocation(id: string): Promise<GraffitiLocation | undefined> {
+    const [location] = await db.select().from(graffitiLocations).where(eq(graffitiLocations.id, id));
+    return location;
+  }
+
+  async getAllGraffitiLocations(): Promise<GraffitiLocation[]> {
+    const locations = await db.select().from(graffitiLocations).orderBy(graffitiLocations.createdAt);
+    return locations;
+  }
+
+  async getUserGraffitiLocations(userId: string): Promise<GraffitiLocation[]> {
+    const locations = await db
+      .select()
+      .from(graffitiLocations)
+      .where(eq(graffitiLocations.userId, userId))
+      .orderBy(graffitiLocations.createdAt);
+    return locations;
+  }
+
+  async createGraffitiLocation(insertLocation: InsertGraffitiLocation): Promise<GraffitiLocation> {
+    const locationData = {
+      ...insertLocation,
+      tags: insertLocation.tags || [],
+      photos: insertLocation.photos || [],
+    };
+    const [location] = await db
+      .insert(graffitiLocations)
+      .values(locationData)
+      .returning();
+    return location;
+  }
+
+  async updateGraffitiLocation(id: string, updateData: Partial<InsertGraffitiLocation>): Promise<GraffitiLocation | undefined> {
+    const cleanedData: any = {};
+    if (updateData.latitude !== undefined) cleanedData.latitude = updateData.latitude;
+    if (updateData.longitude !== undefined) cleanedData.longitude = updateData.longitude;
+    if (updateData.userId !== undefined) cleanedData.userId = updateData.userId;
+    if (updateData.address !== undefined) cleanedData.address = updateData.address;
+    if (updateData.description !== undefined) cleanedData.description = updateData.description;
+    if (updateData.tags !== undefined) cleanedData.tags = updateData.tags || [];
+    if (updateData.photos !== undefined) cleanedData.photos = updateData.photos || [];
+    
+    const [updated] = await db
+      .update(graffitiLocations)
+      .set(cleanedData)
+      .where(eq(graffitiLocations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteGraffitiLocation(id: string): Promise<boolean> {
+    const result = await db.delete(graffitiLocations).where(eq(graffitiLocations.id, id));
+    return true;
+  }
+}
+
+// Use database storage instead of memory storage
+export const storage = new DatabaseStorage();

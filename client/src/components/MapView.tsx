@@ -17,6 +17,7 @@ interface MapViewProps {
   onMarkerClick: (location: GraffitiLocation) => void;
   isAddingLocation: boolean;
   userLocation?: { lat: number; lng: number };
+  tempMarkerPosition?: { lat: number; lng: number } | null;
 }
 
 export default function MapView({ 
@@ -25,12 +26,14 @@ export default function MapView({
   onMapClick, 
   onMarkerClick, 
   isAddingLocation,
-  userLocation 
+  userLocation,
+  tempMarkerPosition
 }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const tempMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -170,6 +173,43 @@ export default function MapView({
     userMarkerRef.current = userMarker;
 
   }, [userLocation]);
+
+  // Update temporary marker when position changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove existing temp marker
+    if (tempMarkerRef.current) {
+      mapInstanceRef.current.removeLayer(tempMarkerRef.current);
+      tempMarkerRef.current = null;
+    }
+
+    // Add new temp marker if position exists
+    if (tempMarkerPosition) {
+      // Create a red marker for temporary position
+      const tempIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      const tempMarker = L.marker([tempMarkerPosition.lat, tempMarkerPosition.lng], {
+        icon: tempIcon
+      }).addTo(mapInstanceRef.current);
+
+      tempMarker.bindPopup(`
+        <div class="text-center">
+          <p class="font-medium text-sm mb-1">📍 New Location</p>
+          <p class="text-xs text-gray-600">Click + to save this spot</p>
+        </div>
+      `).openPopup();
+
+      tempMarkerRef.current = tempMarker;
+    }
+  }, [tempMarkerPosition]);
 
   // Update cursor style when adding location
   useEffect(() => {
