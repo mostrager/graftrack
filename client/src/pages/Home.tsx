@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraffitiLocation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import MapView from "@/components/MapView";
+import SimpleMapView from "@/components/SimpleMapView";
 import TopBar from "@/components/TopBar";
 import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
@@ -189,13 +189,11 @@ export default function Home() {
 
       {/* Map Container */}
       <div className="pt-20 h-screen relative z-0">
-        <MapView
+        <SimpleMapView
           center={currentPosition}
           locations={locations}
           onMapClick={handleMapClick}
-          onMarkerClick={handleMarkerClick}
           isAddingLocation={isAddingLocation}
-          userLocation={currentPosition}
           tempMarkerPosition={newLocationPosition}
         />
       </div>
