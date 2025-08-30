@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GraffitiLocation } from "@shared/schema";
+import { GraffitiLocation, User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import SimpleMapView from "@/components/SimpleMapView";
 import TopBar from "@/components/TopBar";
@@ -8,7 +8,6 @@ import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { logOut } from "@/lib/firebase";
 import { Plus, Target, LogOut, SprayCan } from "lucide-react";
 
 export default function Home() {
@@ -20,7 +19,7 @@ export default function Home() {
   const [newLocationPosition, setNewLocationPosition] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useAuth() as { user: User | null; isLoading: boolean; isAuthenticated: boolean };
 
   // Fetch all locations
   const { data: locations = [], isLoading } = useQuery<GraffitiLocation[]>({
@@ -32,7 +31,7 @@ export default function Home() {
     mutationFn: async (locationData: any) => {
       const locationWithUser = {
         ...locationData,
-        userId: user?.uid || "demo-user", // Ensure we have a userId even in demo mode
+        userId: user?.id || "demo-user", // Ensure we have a userId even in demo mode
       };
       const response = await apiRequest("POST", "/api/locations", locationWithUser);
       return response.json();
@@ -140,7 +139,7 @@ export default function Home() {
   };
 
   const handleLogOut = () => {
-    logOut();
+    window.location.href = "/api/logout";
   };
 
   if (!currentPosition) {
@@ -173,16 +172,16 @@ export default function Home() {
           <div className="flex items-center space-x-2">
             {user && (
               <div className="flex items-center space-x-3 mr-2">
-                {user.photoURL && (
+                {user.profileImageUrl && (
                   <img 
-                    src={user.photoURL} 
+                    src={user.profileImageUrl} 
                     alt="Profile" 
                     className="w-8 h-8 rounded-full object-cover"
                     data-testid="img-user-avatar"
                   />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {user.displayName || user.email}
+                  {user.firstName || user.email}
                 </span>
               </div>
             )}
