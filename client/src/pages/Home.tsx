@@ -80,26 +80,24 @@ export default function Home() {
   }, []);
 
   const handleMapClick = (lat: number, lng: number) => {
-    console.log("Map clicked at:", lat, lng, "isAddingLocation:", isAddingLocation);
+    console.log("=== MAP CLICKED ===");
+    console.log("Coordinates:", lat, lng);
+    console.log("isAddingLocation:", isAddingLocation);
+    console.log("==================");
+    
     if (isAddingLocation) {
-      // When in adding mode, set the new location position (this will show a red marker)
+      console.log("SETTING NEW MARKER POSITION:", lat, lng);
       setNewLocationPosition({ lat, lng });
-      console.log("Red marker should appear at:", lat, lng);
-      // Don't open panel yet - wait for user to confirm
+      setShowAddPanel(true);
+      setIsAddingLocation(false);
       toast({
-        title: "Location Marked",
-        description: "Tap 'Save Location' in the panel below to confirm this spot",
+        title: "Location Marked!",
+        description: "Red marker added - fill out the form below",
       });
-      // Open the panel after a short delay
-      setTimeout(() => {
-        setShowAddPanel(true);
-        setIsAddingLocation(false);
-      }, 500);
     } else {
-      // When not in adding mode, show a toast to prompt user
       toast({
-        title: "Add Location Here?",
-        description: "Tap the + button and then tap on the map to add a graffiti location",
+        title: "Tap + First",
+        description: "Tap the + button first, then tap on the map",
       });
     }
   };
@@ -110,19 +108,29 @@ export default function Home() {
   };
 
   const handleAddLocationClick = () => {
+    console.log("=== + BUTTON CLICKED ===");
+    console.log("Current isAddingLocation:", isAddingLocation);
+    
     if (isAddingLocation) {
+      console.log("CANCELLING ADD MODE");
       setIsAddingLocation(false);
+      setNewLocationPosition(null);
       toast({
         title: "Cancelled",
         description: "Location adding cancelled",
       });
     } else {
+      console.log("ENTERING ADD MODE");
       setIsAddingLocation(true);
+      setNewLocationPosition(null);
+      setShowAddPanel(false);
       toast({
-        title: "Add Location",
-        description: "Tap on the map to add a graffiti location",
+        title: "Add Mode Active",
+        description: "Now tap on the map to place a marker",
       });
     }
+    console.log("New isAddingLocation:", !isAddingLocation);
+    console.log("=======================");
   };
 
   const handleSaveLocation = (locationData: any) => {
