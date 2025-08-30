@@ -1,0 +1,77 @@
+Map clicked! 40.85705840903592 -73.85850906372072 isAddingLocation: true Console.js:61:15
+=== MAP CLICKED === Console.js:61:15
+Coordinates: 40.85705840903592 -73.85850906372072 Console.js:61:15
+isAddingLocation: true Console.js:61:15
+================== Console.js:61:15
+SETTING NEW MARKER POSITION: 40.85705840903592 -73.85850906372072 Console.js:61:15
+OPENING ADD PANEL... Console.js:61:15
+showAddPanel should now be true Console.js:61:15
+AddLocationPanel: rendering panel Console.js:61:15
+Adding red marker at: 
+Object { lat: 40.85705840903592, lng: -73.85850906372072 }
+Console.js:61:15
+AddLocationPanel: rendering panel 4 Console.js:61:15
+=== SAVE BUTTON CLICKED === Console.js:61:15
+Title: lk, Console.js:61:15
+Saving location at: 40.85705840903592 -73.85850906372072 Console.js:61:15
+Location data being saved: 
+Object { latitude: 40.85705840903592, longitude: -73.85850906372072, title: "lk,", description: undefined, tags: [], photos: [] }
+Console.js:61:15
+AddLocationPanel: rendering panel Console.js:61:15
+XHRPOST
+https://028c5857-0d00-4f13-8cd4-a007e96e051d-00-1keybfpo162ih.picard.replit.dev/api/locations
+[HTTP/1.1 500 Internal Server Error 290ms]
+
+AddLocationPanel: rendering panel 2 Console.js:61:15
+Error creating location: Error: 500: {"error":"Failed to create location"}
+    throwIfResNotOk queryClient.ts:6
+    apiRequest queryClient.ts:22
+    mutationFn Home.tsx:37
+    fn mutation.ts:170
+    run retryer.ts:153
+    start retryer.ts:218
+    execute mutation.ts:208
+    mutate mutationObserver.ts:125
+    mutate useMutation.ts:52
+    handleSaveLocation Home.tsx:139
+    handleSave AddLocationPanel.tsx:114
+    React 15
+    addEventListener Detail.js:76
+    React 8
+    <anonymous> main.tsx:6
+Console.js:61:15
+AddLocationPanel: rendering panel 2 Console.js:61:15
+=== SAVE BUTTON CLICKED === Console.js:61:15
+Title: <empty string> Console.js:61:15
+Title is empty, showing error Console.js:61:15
+AddLocationPanel: rendering panel 2 Console.js:61:15
+=== SAVE BUTTON CLICKED === Console.js:61:15
+Title: h Console.js:61:15
+Saving location at: 40.85705840903592 -73.85850906372072 Console.js:61:15
+Location data being saved: 
+Object { latitude: 40.85705840903592, longitude: -73.85850906372072, title: "h", description: undefined, tags: [], photos: [] }
+Console.js:61:15
+AddLocationPanel: rendering panel Console.js:61:15
+XHRPOST
+https://028c5857-0d00-4f13-8cd4-a007e96e051d-00-1keybfpo162ih.picard.replit.dev/api/locations
+[HTTP/1.1 500 Internal Server Error 265ms]
+
+AddLocationPanel: rendering panel 2 Console.js:61:15
+Error creating location: Error: 500: {"error":"Failed to create location"}
+    throwIfResNotOk queryClient.ts:6
+    apiRequest queryClient.ts:22
+    mutationFn Home.tsx:37
+    fn mutation.ts:170
+    run retryer.ts:153
+    start retryer.ts:218
+    execute mutation.ts:208
+    mutate mutationObserver.ts:125
+    mutate useMutation.ts:52
+    handleSaveLocation Home.tsx:139
+    handleSave AddLocationPanel.tsx:114
+    React 15
+    addEventListener Detail.js:76
+    React 8
+    <anonymous> main.tsx:6
+Console.js:61:15
+AddLocationPanel: rendering panel
