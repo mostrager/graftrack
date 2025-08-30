@@ -32,7 +32,7 @@ export default function Home() {
     mutationFn: async (locationData: any) => {
       const locationWithUser = {
         ...locationData,
-        userId: user?.uid,
+        userId: user?.uid || "demo-user", // Ensure we have a userId even in demo mode
       };
       const response = await apiRequest("POST", "/api/locations", locationWithUser);
       return response.json();
@@ -80,9 +80,11 @@ export default function Home() {
   }, []);
 
   const handleMapClick = (lat: number, lng: number) => {
+    console.log("Map clicked at:", lat, lng, "isAddingLocation:", isAddingLocation);
     if (isAddingLocation) {
       // When in adding mode, set the new location position (this will show a red marker)
       setNewLocationPosition({ lat, lng });
+      console.log("Red marker should appear at:", lat, lng);
       // Don't open panel yet - wait for user to confirm
       toast({
         title: "Location Marked",

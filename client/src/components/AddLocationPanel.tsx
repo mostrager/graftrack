@@ -85,23 +85,18 @@ export default function AddLocationPanel({
   };
 
   const handleSave = () => {
-    if (uploadedPhotos.length === 0) {
-      toast({
-        title: "Photos Required",
-        description: "Please upload at least one photo of the graffiti",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // For testing, allow saving without photos
+    console.log("Saving location at:", currentPosition.lat, currentPosition.lng);
+    
     const locationData = {
       latitude: currentPosition.lat,
       longitude: currentPosition.lng,
       description: description.trim() || undefined,
       tags: selectedTags,
-      photos: uploadedPhotos,
+      photos: uploadedPhotos.length > 0 ? uploadedPhotos : [],
     };
 
+    console.log("Location data being saved:", locationData);
     onSave(locationData);
     
     // Reset form
