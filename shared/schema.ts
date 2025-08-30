@@ -27,10 +27,11 @@ export const users = pgTable("users", {
 
 export const graffitiLocations = pgTable("graffiti_locations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id"), // Removed foreign key constraint for demo mode
+  userId: varchar("user_id").references(() => users.id),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
   title: text("title").notNull(),
+  city: text("city"),
   address: text("address"),
   description: text("description"),
   tags: jsonb("tags").$type<string[]>().notNull().default([]),

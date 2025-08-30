@@ -63,10 +63,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all graffiti locations (temporarily public)
-  app.get("/api/locations", async (req, res) => {
+  // Get all graffiti locations for authenticated user
+  app.get("/api/locations", isAuthenticated, async (req: any, res) => {
     try {
-      const locations = await storage.getAllGraffitiLocations();
+      const userId = req.user.claims.sub;
+      const locations = await storage.getUserGraffitiLocations(userId);
       res.json(locations);
     } catch (error) {
       console.error("Error fetching locations:", error);
@@ -89,9 +90,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new graffiti location
-  app.post("/api/locations", async (req, res) => {
+  app.post("/api/locations", isAuthenticated, async (req: any, res) => {
     try {
-      const validatedData = insertGraffitiLocationSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      const validatedData = insertGraffitiLocationSchema.parse({
+        ...req.body,
+        userId
+      });
       
       // Normalize photo URLs if they're upload URLs
       if (validatedData.photos && validatedData.photos.length > 0) {

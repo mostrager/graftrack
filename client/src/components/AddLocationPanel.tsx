@@ -20,6 +20,7 @@ export default function AddLocationPanel({
   isLoading 
 }: AddLocationPanelProps) {
   const [title, setTitle] = useState("");
+  const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
   const [customTag, setCustomTag] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -105,6 +106,7 @@ export default function AddLocationPanel({
       latitude: currentPosition.lat,
       longitude: currentPosition.lng,
       title: title.trim(),
+      city: city.trim() || undefined,
       description: description.trim() || undefined,
       tags: selectedTags,
       photos: uploadedPhotos,
@@ -115,6 +117,7 @@ export default function AddLocationPanel({
     
     // Reset form
     setTitle("");
+    setCity("");
     setDescription("");
     setCustomTag("");
     setSelectedTags([]);
@@ -180,6 +183,18 @@ export default function AddLocationPanel({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             data-testid="input-title"
+          />
+        </div>
+
+        {/* City Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-3">City</label>
+          <input 
+            className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring focus:border-transparent" 
+            placeholder="Enter the city..."
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            data-testid="input-city"
           />
         </div>
 

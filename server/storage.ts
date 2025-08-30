@@ -146,6 +146,7 @@ export class DatabaseStorage implements IStorage {
       ...insertLocation,
       tags: insertLocation.tags || [],
       photos: insertLocation.photos || [],
+      city: insertLocation.city || null,
     };
     const [location] = await db
       .insert(graffitiLocations)
@@ -159,6 +160,7 @@ export class DatabaseStorage implements IStorage {
     if (updateData.latitude !== undefined) cleanedData.latitude = updateData.latitude;
     if (updateData.longitude !== undefined) cleanedData.longitude = updateData.longitude;
     if (updateData.userId !== undefined) cleanedData.userId = updateData.userId;
+    if (updateData.city !== undefined) cleanedData.city = updateData.city;
     if (updateData.address !== undefined) cleanedData.address = updateData.address;
     if (updateData.description !== undefined) cleanedData.description = updateData.description;
     if (updateData.tags !== undefined) cleanedData.tags = updateData.tags || [];

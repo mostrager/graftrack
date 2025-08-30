@@ -31,7 +31,7 @@ export default function Home() {
     mutationFn: async (locationData: any) => {
       const locationWithUser = {
         ...locationData,
-        userId: user?.id || "demo-user", // Ensure we have a userId even in demo mode
+        userId: user?.id, // Use authenticated user's ID
       };
       const response = await apiRequest("POST", "/api/locations", locationWithUser);
       return response.json();
