@@ -30,6 +30,7 @@ export const graffitiLocations = pgTable("graffiti_locations", {
   userId: varchar("user_id").references(() => users.id),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
+  title: text("title").notNull(),
   address: text("address"),
   description: text("description"),
   tags: jsonb("tags").$type<string[]>().notNull().default([]),

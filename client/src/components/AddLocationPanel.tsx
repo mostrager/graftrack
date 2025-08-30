@@ -19,6 +19,7 @@ export default function AddLocationPanel({
   onSave, 
   isLoading 
 }: AddLocationPanelProps) {
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [customTag, setCustomTag] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -85,21 +86,31 @@ export default function AddLocationPanel({
   };
 
   const handleSave = () => {
-    // For testing, allow saving without photos
+    if (!title.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a title for this location",
+        variant: "destructive",
+      });
+      return;
+    }
+
     console.log("Saving location at:", currentPosition.lat, currentPosition.lng);
     
     const locationData = {
       latitude: currentPosition.lat,
       longitude: currentPosition.lng,
+      title: title.trim(),
       description: description.trim() || undefined,
       tags: selectedTags,
-      photos: uploadedPhotos.length > 0 ? uploadedPhotos : [],
+      photos: uploadedPhotos,
     };
 
     console.log("Location data being saved:", locationData);
     onSave(locationData);
     
     // Reset form
+    setTitle("");
     setDescription("");
     setCustomTag("");
     setSelectedTags([]);
@@ -151,9 +162,21 @@ export default function AddLocationPanel({
           </div>
         </div>
 
+        {/* Title Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-3">Title *</label>
+          <input 
+            className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring focus:border-transparent" 
+            placeholder="Enter a title for this location..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            data-testid="input-title"
+          />
+        </div>
+
         {/* Photo Upload Section */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-3">Photos</label>
+          <label className="block text-sm font-medium mb-3">Photos (Optional)</label>
           
           <ObjectUploader
             maxNumberOfFiles={5}

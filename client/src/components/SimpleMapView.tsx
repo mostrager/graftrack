@@ -109,7 +109,7 @@ export default function SimpleMapView({
         .addTo(mapInstanceRef.current!)
         .bindPopup(`
           <div>
-            <p>${location.description || "Graffiti Location"}</p>
+            <p class="font-medium">${(location as any).title || location.description || "Graffiti Location"}</p>
             <p class="text-xs">${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}</p>
           </div>
         `);
