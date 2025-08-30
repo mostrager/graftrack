@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { X, MapPin, RefreshCw, Camera, Trash2 } from "lucide-react";
-import { ObjectUploader } from "./ObjectUploader";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
 import { useToast } from "@/hooks/use-toast";
 
@@ -125,7 +125,7 @@ export default function AddLocationPanel({
     }`}>
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-lg">Add Graffiti Location</h3>
+          <h3 className="heading font-semibold text-lg">Add Graffiti Location</h3>
           <button 
             className="min-h-11 min-w-11 p-2" 
             onClick={onClose}

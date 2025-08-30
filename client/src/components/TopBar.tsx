@@ -13,8 +13,8 @@ export default function TopBar({ locationCount }: TopBarProps) {
             <SprayCan className="w-4 h-4 text-accent-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-foreground">GraffitiTracker</h1>
-            <p className="text-xs text-muted-foreground" data-testid="text-location-count">
+            <h1 className="heading font-bold text-xl text-foreground tracking-wide">Graffiti Tracker</h1>
+            <p className="text-xs text-muted-foreground street-text" data-testid="text-location-count">
               {locationCount} location{locationCount !== 1 ? 's' : ''} saved
             </p>
           </div>

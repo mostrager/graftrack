@@ -1,14 +1,15 @@
-import { type User, type InsertUser, type GraffitiLocation, type InsertGraffitiLocation } from "@shared/schema";
+import { type User, type UpsertUser, type GraffitiLocation, type InsertGraffitiLocation } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // User operations - mandatory for Replit Auth
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   // Graffiti location methods
   getGraffitiLocation(id: string): Promise<GraffitiLocation | undefined>;
   getAllGraffitiLocations(): Promise<GraffitiLocation[]>;
+  getUserGraffitiLocations(userId: string): Promise<GraffitiLocation[]>;
   createGraffitiLocation(location: InsertGraffitiLocation): Promise<GraffitiLocation>;
   updateGraffitiLocation(id: string, location: Partial<InsertGraffitiLocation>): Promise<GraffitiLocation | undefined>;
   deleteGraffitiLocation(id: string): Promise<boolean>;
@@ -27,15 +28,17 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const id = userData.id || randomUUID();
+    const user: User = {
+      id,
+      email: userData.email || null,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
+      createdAt: userData.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
     this.users.set(id, user);
     return user;
   }
@@ -48,6 +51,14 @@ export class MemStorage implements IStorage {
     return Array.from(this.graffitiLocations.values()).sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+  }
+
+  async getUserGraffitiLocations(userId: string): Promise<GraffitiLocation[]> {
+    return Array.from(this.graffitiLocations.values())
+      .filter(location => location.userId === userId)
+      .sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
   }
 
   async createGraffitiLocation(insertLocation: InsertGraffitiLocation): Promise<GraffitiLocation> {

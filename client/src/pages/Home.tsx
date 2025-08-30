@@ -7,7 +7,9 @@ import TopBar from "@/components/TopBar";
 import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Target } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { logOut } from "@/lib/firebase";
+import { Plus, Target, LogOut, SprayCan } from "lucide-react";
 
 export default function Home() {
   const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -17,6 +19,7 @@ export default function Home() {
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch all locations
   const { data: locations = [], isLoading } = useQuery<GraffitiLocation[]>({
@@ -26,7 +29,11 @@ export default function Home() {
   // Create location mutation
   const createLocationMutation = useMutation({
     mutationFn: async (locationData: any) => {
-      const response = await apiRequest("POST", "/api/locations", locationData);
+      const locationWithUser = {
+        ...locationData,
+        userId: user?.uid,
+      };
+      const response = await apiRequest("POST", "/api/locations", locationWithUser);
       return response.json();
     },
     onSuccess: () => {
@@ -72,9 +79,16 @@ export default function Home() {
 
   const handleMapClick = (lat: number, lng: number) => {
     if (isAddingLocation) {
+      // When in adding mode, set the new position and open panel
       setCurrentPosition({ lat, lng });
       setShowAddPanel(true);
       setIsAddingLocation(false);
+    } else {
+      // When not in adding mode, show a toast to prompt user
+      toast({
+        title: "Add Location Here?",
+        description: "Tap the + button and then tap on the map to add a graffiti location",
+      });
     }
   };
 
@@ -103,6 +117,10 @@ export default function Home() {
     createLocationMutation.mutate(locationData);
   };
 
+  const handleLogOut = () => {
+    logOut();
+  };
+
   if (!currentPosition) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -117,7 +135,45 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Top Bar */}
-      <TopBar locationCount={locations.length} />
+      <div className="fixed top-0 left-0 right-0 bg-card/90 backdrop-blur-sm border-b border-border z-40 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+              <SprayCan className="w-4 h-4 text-accent-foreground" />
+            </div>
+            <div>
+              <h1 className="heading font-bold text-xl text-foreground tracking-wide">Graffiti Tracker</h1>
+              <p className="text-xs text-muted-foreground street-text" data-testid="text-location-count">
+                {locations.length} location{locations.length !== 1 ? 's' : ''} saved
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {user && (
+              <div className="flex items-center space-x-3 mr-2">
+                {user.photoURL && (
+                  <img 
+                    src={user.photoURL} 
+                    alt="Profile" 
+                    className="w-8 h-8 rounded-full object-cover"
+                    data-testid="img-user-avatar"
+                  />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {user.displayName || user.email}
+                </span>
+              </div>
+            )}
+            <button 
+              className="min-h-11 min-w-11 p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+              onClick={handleLogOut}
+              data-testid="button-logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Map Container */}
       <div className="pt-20 h-screen">
@@ -127,6 +183,7 @@ export default function Home() {
           onMapClick={handleMapClick}
           onMarkerClick={handleMarkerClick}
           isAddingLocation={isAddingLocation}
+          userLocation={currentPosition}
         />
       </div>
 

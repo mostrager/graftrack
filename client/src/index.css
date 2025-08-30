@@ -1,6 +1,7 @@
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 @import url('https://unpkg.com/@uppy/core@3.0.0/dist/style.min.css');
 @import url('https://unpkg.com/@uppy/dashboard@3.0.0/dist/style.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400&family=Oswald:wght@300;400;500;600;700&family=Anton:wght@400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -39,7 +40,8 @@
   --sidebar-accent-foreground: hsl(210, 40%, 98%);
   --sidebar-border: hsl(214, 32%, 91%);
   --sidebar-ring: hsl(215, 45%, 20%);
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Oswald', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Bebas Neue', 'Anton', 'Impact', sans-serif;
   --font-serif: 'Libre Baskerville', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --radius: 0.75rem;
@@ -92,6 +94,22 @@
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-text-size-adjust: 100%;
+  }
+
+  /* Graffiti-style headings */
+  h1, h2, h3, .heading {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Street art aesthetic touches */
+  .street-text {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   /* Touch-friendly sizing */
@@ -163,6 +181,22 @@
   
   .leaflet-popup {
     margin-bottom: 20px;
+  }
+}
+
+/* User location marker animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 

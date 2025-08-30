@@ -115,7 +115,7 @@ export default function LocationDetailsPanel({
     }`}>
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-lg">Location Details</h3>
+          <h3 className="heading font-semibold text-lg">Location Details</h3>
           <div className="flex items-center space-x-2">
             <button 
               className="min-h-11 min-w-11 p-2 text-accent"
@@ -168,7 +168,7 @@ export default function LocationDetailsPanel({
         {/* Photo Gallery */}
         {location.photos && location.photos.length > 0 && (
           <div className="mb-6">
-            <h4 className="font-medium mb-3">Photos</h4>
+            <h4 className="heading font-medium mb-3 text-sm">Photos</h4>
             <div className="grid grid-cols-2 gap-3">
               {location.photos.map((photoUrl, index) => (
                 <div 
@@ -192,7 +192,7 @@ export default function LocationDetailsPanel({
         {/* Description */}
         {location.description && (
           <div className="mb-6">
-            <h4 className="font-medium mb-3">Description</h4>
+            <h4 className="heading font-medium mb-3 text-sm">Description</h4>
             <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-location-description">
               {location.description}
             </p>
@@ -202,7 +202,7 @@ export default function LocationDetailsPanel({
         {/* Tags */}
         {location.tags && location.tags.length > 0 && (
           <div className="mb-6">
-            <h4 className="font-medium mb-3">Tags</h4>
+            <h4 className="heading font-medium mb-3 text-sm">Tags</h4>
             <div className="flex flex-wrap gap-2">
               {location.tags.map(tag => (
                 <span 

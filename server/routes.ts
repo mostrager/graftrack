@@ -5,7 +5,6 @@ import { insertGraffitiLocationSchema } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
   // Public file serving endpoint
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
@@ -49,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all graffiti locations
+  // Get all graffiti locations (temporarily public)
   app.get("/api/locations", async (req, res) => {
     try {
       const locations = await storage.getAllGraffitiLocations();

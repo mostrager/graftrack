@@ -16,6 +16,7 @@ interface MapViewProps {
   onMapClick: (lat: number, lng: number) => void;
   onMarkerClick: (location: GraffitiLocation) => void;
   isAddingLocation: boolean;
+  userLocation?: { lat: number; lng: number };
 }
 
 export default function MapView({ 
@@ -23,11 +24,13 @@ export default function MapView({
   locations, 
   onMapClick, 
   onMarkerClick, 
-  isAddingLocation 
+  isAddingLocation,
+  userLocation 
 }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const userMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -112,6 +115,61 @@ export default function MapView({
       }
     };
   }, [locations, onMarkerClick]);
+
+  // Update user location marker
+  useEffect(() => {
+    if (!mapInstanceRef.current || !userLocation) return;
+
+    // Remove existing user marker
+    if (userMarkerRef.current) {
+      mapInstanceRef.current.removeLayer(userMarkerRef.current);
+    }
+
+    // Create custom user location icon
+    const userIcon = L.divIcon({
+      className: 'user-location-marker',
+      html: `
+        <div style="
+          width: 20px; 
+          height: 20px; 
+          background: #3b82f6; 
+          border: 3px solid white; 
+          border-radius: 50%; 
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          position: relative;
+        ">
+          <div style="
+            width: 40px; 
+            height: 40px; 
+            background: rgba(59, 130, 246, 0.2); 
+            border-radius: 50%; 
+            position: absolute; 
+            top: -13px; 
+            left: -13px;
+            animation: pulse 2s infinite;
+          "></div>
+        </div>
+      `,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+    // Add user location marker
+    const userMarker = L.marker([userLocation.lat, userLocation.lng], { 
+      icon: userIcon,
+      zIndexOffset: 1000 // Keep it above other markers
+    }).addTo(mapInstanceRef.current);
+
+    userMarker.bindPopup(`
+      <div class="text-center">
+        <p class="font-medium text-sm mb-1">📍 Your Location</p>
+        <p class="text-xs text-gray-600">${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}</p>
+      </div>
+    `);
+
+    userMarkerRef.current = userMarker;
+
+  }, [userLocation]);
 
   // Update cursor style when adding location
   useEffect(() => {
