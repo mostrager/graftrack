@@ -86,7 +86,11 @@ export default function AddLocationPanel({
   };
 
   const handleSave = () => {
+    console.log("=== SAVE BUTTON CLICKED ===");
+    console.log("Title:", title);
+    
     if (!title.trim()) {
+      console.log("Title is empty, showing error");
       toast({
         title: "Title Required",
         description: "Please enter a title for this location",
@@ -123,7 +127,12 @@ export default function AddLocationPanel({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log("AddLocationPanel: not open, returning null");
+    return null;
+  }
+  
+  console.log("AddLocationPanel: rendering panel");
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 rounded-t-2xl max-h-[80vh] overflow-hidden transform transition-transform duration-300 ${
@@ -277,7 +286,7 @@ export default function AddLocationPanel({
           <button 
             className="w-full min-h-12 bg-accent text-accent-foreground font-medium py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             onClick={handleSave}
-            disabled={isLoading || uploadedPhotos.length === 0}
+            disabled={isLoading}
             data-testid="button-save-location"
           >
             {isLoading ? (

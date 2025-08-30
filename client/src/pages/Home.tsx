@@ -88,8 +88,10 @@ export default function Home() {
     if (isAddingLocation) {
       console.log("SETTING NEW MARKER POSITION:", lat, lng);
       setNewLocationPosition({ lat, lng });
+      console.log("OPENING ADD PANEL...");
       setShowAddPanel(true);
       setIsAddingLocation(false);
+      console.log("showAddPanel should now be true");
       toast({
         title: "Location Marked!",
         description: "Red marker added - fill out the form below",
