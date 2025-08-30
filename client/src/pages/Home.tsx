@@ -203,16 +203,18 @@ export default function Home() {
       </button>
 
       {/* Add Location Panel */}
-      <AddLocationPanel
-        isOpen={showAddPanel}
-        onClose={() => {
-          setShowAddPanel(false);
-          setNewLocationPosition(null);
-        }}
-        currentPosition={newLocationPosition || currentPosition}
-        onSave={handleSaveLocation}
-        isLoading={createLocationMutation.isPending}
-      />
+      {(newLocationPosition || currentPosition) && (
+        <AddLocationPanel
+          isOpen={showAddPanel}
+          onClose={() => {
+            setShowAddPanel(false);
+            setNewLocationPosition(null);
+          }}
+          currentPosition={newLocationPosition || currentPosition!}
+          onSave={handleSaveLocation}
+          isLoading={createLocationMutation.isPending}
+        />
+      )}
 
       {/* Location Details Panel */}
       <LocationDetailsPanel

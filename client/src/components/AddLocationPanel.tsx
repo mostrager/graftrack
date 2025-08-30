@@ -146,7 +146,7 @@ export default function AddLocationPanel({
             </div>
             <div className="flex-1">
               <p className="font-medium text-sm" data-testid="text-current-coordinates">
-                {currentPosition.lat.toFixed(4)}, {currentPosition.lng.toFixed(4)}
+                {currentPosition ? `${currentPosition.lat.toFixed(4)}, ${currentPosition.lng.toFixed(4)}` : 'Loading...'}
               </p>
               <p className="text-xs text-muted-foreground">Current location</p>
             </div>
