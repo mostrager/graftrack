@@ -17,6 +17,7 @@ export default function Home() {
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GraffitiLocation | null>(null);
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [newLocationPosition, setNewLocationPosition] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -40,6 +41,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
       setShowAddPanel(false);
       setIsAddingLocation(false);
+      setNewLocationPosition(null);
       toast({
         title: "Success",
         description: "Location saved successfully!",
@@ -79,8 +81,8 @@ export default function Home() {
 
   const handleMapClick = (lat: number, lng: number) => {
     if (isAddingLocation) {
-      // When in adding mode, set the new position and open panel
-      setCurrentPosition({ lat, lng });
+      // When in adding mode, set the new location position and open panel
+      setNewLocationPosition({ lat, lng });
       setShowAddPanel(true);
       setIsAddingLocation(false);
     } else {
@@ -142,7 +144,7 @@ export default function Home() {
               <SprayCan className="w-4 h-4 text-accent-foreground" />
             </div>
             <div>
-              <h1 className="heading font-bold text-xl text-foreground tracking-wide">Graffiti Tracker</h1>
+              <h1 className="heading font-bold text-xl text-foreground tracking-wide">GrafTrack</h1>
               <p className="text-xs text-muted-foreground street-text" data-testid="text-location-count">
                 {locations.length} location{locations.length !== 1 ? 's' : ''} saved
               </p>
@@ -203,8 +205,11 @@ export default function Home() {
       {/* Add Location Panel */}
       <AddLocationPanel
         isOpen={showAddPanel}
-        onClose={() => setShowAddPanel(false)}
-        currentPosition={currentPosition}
+        onClose={() => {
+          setShowAddPanel(false);
+          setNewLocationPosition(null);
+        }}
+        currentPosition={newLocationPosition || currentPosition}
         onSave={handleSaveLocation}
         isLoading={createLocationMutation.isPending}
       />
