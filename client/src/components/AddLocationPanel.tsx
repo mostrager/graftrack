@@ -138,24 +138,38 @@ export default function AddLocationPanel({
   console.log("AddLocationPanel: rendering panel");
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 rounded-t-2xl max-h-[80vh] overflow-hidden transform transition-transform duration-300 ${
-      isOpen ? "translate-y-0" : "translate-y-full"
+    <div className={`fixed inset-0 z-50 flex items-end transition-opacity duration-300 ${
+      isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
     }`}>
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="heading font-semibold text-lg">Add Graffiti Location</h3>
-          <button 
-            className="min-h-11 min-w-11 p-2" 
-            onClick={onClose}
-            data-testid="button-close-add-panel"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-        <p className="text-sm text-muted-foreground">Document graffiti at your current location</p>
-      </div>
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50" 
+        onClick={onClose}
+      />
       
-      <div className="p-4 overflow-y-auto max-h-[calc(80vh-100px)]">
+      {/* Panel */}
+      <div className={`relative w-full bg-card rounded-t-2xl max-h-[85vh] overflow-hidden transform transition-transform duration-300 safe-bottom ${
+        isOpen ? "translate-y-0" : "translate-y-full"
+      }`}>
+        {/* Handle Bar */}
+        <div className="flex justify-center pt-2 pb-1">
+          <div className="w-12 h-1 bg-border rounded-full" />
+        </div>
+        
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-between">
+            <h3 className="heading font-bold text-xl">ADD SPOT</h3>
+            <button 
+              className="p-2 touch-target" 
+              onClick={onClose}
+              data-testid="button-close-add-panel"
+            >
+              <X className="w-6 h-6 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      
+        <div className="px-4 pb-4 overflow-y-auto max-h-[calc(85vh-120px)]">
         {/* Location Info */}
         <div className="mb-6">
           <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
@@ -296,26 +310,24 @@ export default function AddLocationPanel({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
+        </div>
+        
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-border bg-card">
           <button 
-            className="w-full min-h-12 bg-accent text-accent-foreground font-medium py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full bg-accent text-accent-foreground font-bold py-4 px-4 rounded-xl flex items-center justify-center space-x-2 street-text text-lg touch-target disabled:opacity-50 active:scale-95 transition-transform"
             onClick={handleSave}
             disabled={isLoading}
             data-testid="button-save-location"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-accent-foreground border-t-transparent rounded-full animate-spin" />
+              <RefreshCw className="w-5 h-5 animate-spin" />
             ) : (
-              "Save Location"
+              <>
+                <MapPin className="w-5 h-5" />
+                <span>SAVE SPOT</span>
+              </>
             )}
-          </button>
-          <button 
-            className="w-full min-h-12 bg-secondary text-secondary-foreground font-medium py-3 rounded-lg hover:bg-secondary/80 transition-colors"
-            onClick={onClose}
-            data-testid="button-cancel-add-location"
-          >
-            Cancel
           </button>
         </div>
       </div>

@@ -7,7 +7,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="h-screen bg-background flex flex-col items-center justify-center p-4 safe-top safe-bottom">
       <div className="text-center max-w-md">
         <div className="mb-8">
           <div className="w-20 h-20 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -24,7 +24,7 @@ export default function Landing() {
         
         <button
           onClick={handleSignIn}
-          className="w-full bg-accent text-accent-foreground font-medium py-4 px-6 rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center space-x-3 street-text text-lg"
+          className="w-full bg-accent text-accent-foreground font-bold py-4 px-6 rounded-xl active:scale-95 transition-all flex items-center justify-center space-x-3 street-text text-lg touch-target"
           data-testid="button-sign-in"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -3,17 +3,20 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraffitiLocation, User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import SimpleMapView from "@/components/SimpleMapView";
-import TopBar from "@/components/TopBar";
+import MobileHeader from "@/components/MobileHeader";
+import MobileNavBar from "@/components/MobileNavBar";
+import MobileProfilePanel from "@/components/MobileProfilePanel";
 import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Target, LogOut, SprayCan } from "lucide-react";
+import { Target } from "lucide-react";
 
 export default function Home() {
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GraffitiLocation | null>(null);
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [newLocationPosition, setNewLocationPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -154,50 +157,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Top Bar */}
-      <div className="fixed top-0 left-0 right-0 bg-card/90 backdrop-blur-sm border-b border-border z-40 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <SprayCan className="w-4 h-4 text-accent-foreground" />
-            </div>
-            <div>
-              <h1 className="heading font-bold text-xl text-foreground tracking-wide">GrafTrack</h1>
-              <p className="text-xs text-muted-foreground street-text" data-testid="text-location-count">
-                {locations.length} location{locations.length !== 1 ? 's' : ''} saved
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            {user && (
-              <div className="flex items-center space-x-3 mr-2">
-                {user.profileImageUrl && (
-                  <img 
-                    src={user.profileImageUrl} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-full object-cover"
-                    data-testid="img-user-avatar"
-                  />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  {user.firstName || user.email}
-                </span>
-              </div>
-            )}
-            <button 
-              className="min-h-11 min-w-11 p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-              onClick={handleLogOut}
-              data-testid="button-logout"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="h-screen w-full bg-background flex flex-col">
+      {/* Mobile Header */}
+      <MobileHeader locationCount={locations.length} />
 
-      {/* Map Container */}
-      <div className="pt-20 h-screen relative z-0">
+      {/* Map Container - Full Screen */}
+      <div className="flex-1 relative z-0" style={{ paddingTop: '56px', paddingBottom: '64px' }}>
         <SimpleMapView
           center={currentPosition}
           locations={locations}
@@ -205,20 +170,32 @@ export default function Home() {
           isAddingLocation={isAddingLocation}
           tempMarkerPosition={newLocationPosition}
         />
+        
+        {/* Target indicator when in add mode */}
+        {isAddingLocation && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="flex flex-col items-center">
+              <Target className="w-8 h-8 text-accent animate-pulse" />
+              <p className="mt-2 px-4 py-2 bg-accent/90 text-accent-foreground rounded-full text-sm font-medium street-text">
+                TAP MAP TO MARK SPOT
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Floating Action Button */}
-      <button
-        onClick={handleAddLocationClick}
-        className={`fixed bottom-8 right-4 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-          isAddingLocation
-            ? "bg-destructive text-destructive-foreground"
-            : "bg-accent text-accent-foreground"
-        }`}
-        data-testid="button-add-location"
-      >
-        {isAddingLocation ? <Target className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-      </button>
+      {/* Mobile Bottom Navigation */}
+      <MobileNavBar 
+        onAddClick={handleAddLocationClick}
+        onProfileClick={() => setShowProfilePanel(true)}
+        onListClick={() => {
+          toast({
+            title: "Coming Soon",
+            description: "List view will be available soon!",
+          });
+        }}
+        isAddingLocation={isAddingLocation}
+      />
 
       {/* Add Location Panel */}
       {(newLocationPosition || currentPosition) && (
@@ -239,6 +216,15 @@ export default function Home() {
         isOpen={showDetailsPanel}
         onClose={() => setShowDetailsPanel(false)}
         location={selectedLocation}
+      />
+
+      {/* Profile Panel */}
+      <MobileProfilePanel
+        isOpen={showProfilePanel}
+        onClose={() => setShowProfilePanel(false)}
+        user={user}
+        locationCount={locations.length}
+        onLogout={handleLogOut}
       />
     </div>
   );
