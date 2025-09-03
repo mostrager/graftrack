@@ -8,6 +8,7 @@ import MobileNavBar from "@/components/MobileNavBar";
 import MobileProfilePanel from "@/components/MobileProfilePanel";
 import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
+import CompassButton from "@/components/CompassButton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Target } from "lucide-react";
@@ -160,6 +161,7 @@ export default function Home() {
 
       {/* Map Container - Full Screen */}
       <div className="flex-1 relative z-0" style={{ paddingTop: '56px', paddingBottom: '64px' }}>
+        <CompassButton />
         <EnhancedMapView
           center={currentPosition}
           locations={locations}

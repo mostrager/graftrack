@@ -135,7 +135,7 @@ export default function EnhancedMapView({
         };
         setUserLocation(newLocation);
         
-        // Update heading if available
+        // Update heading if available from GPS
         if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
           setUserHeading(position.coords.heading);
         }
@@ -152,32 +152,43 @@ export default function EnhancedMapView({
 
     // Also listen for device orientation for heading
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      if ((event as any).webkitCompassHeading) {
-        // iOS devices
-        setUserHeading((event as any).webkitCompassHeading);
-      } else if (event.alpha !== null) {
-        // Android devices
-        // Convert alpha to compass heading
+      if ((event as any).webkitCompassHeading !== undefined) {
+        // iOS devices with compass
+        const compassHeading = (event as any).webkitCompassHeading;
+        setUserHeading(compassHeading);
+      } else if (event.alpha !== null && event.absolute) {
+        // Android devices - use absolute orientation
+        // Convert alpha to compass heading (0 = North)
         const heading = (360 - event.alpha) % 360;
+        setUserHeading(heading);
+      } else if (event.alpha !== null) {
+        // Fallback for relative orientation
+        const heading = event.alpha;
         setUserHeading(heading);
       }
     };
 
-    // Request permission for iOS devices
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-      (DeviceOrientationEvent as any).requestPermission()
-        .then((response: string) => {
+    // Function to request permission and start listening
+    const startCompass = async () => {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        // iOS 13+ requires permission
+        try {
+          const response = await (DeviceOrientationEvent as any).requestPermission();
           if (response === 'granted') {
             window.addEventListener('deviceorientationabsolute', handleOrientation);
             window.addEventListener('deviceorientation', handleOrientation);
           }
-        })
-        .catch(console.error);
-    } else {
-      // Non-iOS devices
-      window.addEventListener('deviceorientationabsolute', handleOrientation);
-      window.addEventListener('deviceorientation', handleOrientation);
-    }
+        } catch (error) {
+          console.error('Error requesting device orientation permission:', error);
+        }
+      } else {
+        // Non-iOS devices or older iOS
+        window.addEventListener('deviceorientationabsolute', handleOrientation);
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+    };
+    
+    startCompass();
 
     return () => {
       if (watchIdRef.current !== null) {
@@ -198,71 +209,94 @@ export default function EnhancedMapView({
       userMarkerRef.current = null;
     }
 
-    // Create custom arrow icon for user location
-    const arrowIcon = L.divIcon({
+    // Create custom north arrow icon for user location
+    const northArrowIcon = L.divIcon({
       html: `
         <div style="
-          width: 40px;
-          height: 40px;
+          width: 50px;
+          height: 50px;
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
         ">
-          <!-- Blue pulsing circle -->
+          <!-- Pulsing glow -->
           <div style="
             position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(37, 99, 235, 0.2);
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, transparent 70%);
             border-radius: 50%;
             animation: pulse 2s infinite;
           "></div>
-          <!-- Blue dot -->
+          <!-- North Arrow Container -->
           <div style="
             position: absolute;
-            width: 12px;
-            height: 12px;
-            background: #2563eb;
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            z-index: 2;
-          "></div>
-          <!-- Direction arrow -->
+            width: 40px;
+            height: 40px;
+            transform: rotate(${userHeading}deg);
+            transition: transform 0.3s ease;
+          ">
+            <!-- Arrow shape -->
+            <svg width="40" height="40" viewBox="0 0 40 40" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+              <!-- North pointer (blue) -->
+              <path d="M20,8 L25,25 L20,22 L15,25 Z" fill="#2563eb" stroke="white" stroke-width="1"/>
+              <!-- South pointer (white) -->
+              <path d="M20,32 L15,15 L20,18 L25,15 Z" fill="white" stroke="#2563eb" stroke-width="1"/>
+              <!-- Center dot -->
+              <circle cx="20" cy="20" r="3" fill="#2563eb" stroke="white" stroke-width="1"/>
+            </svg>
+            <!-- N label -->
+            <div style="
+              position: absolute;
+              top: -5px;
+              left: 17px;
+              color: white;
+              font-size: 10px;
+              font-weight: bold;
+              text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            ">N</div>
+          </div>
+          <!-- Heading display -->
           <div style="
             position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 20px solid #2563eb;
-            transform: rotate(${userHeading}deg) translateY(-10px);
-            transform-origin: center bottom;
-            z-index: 1;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-          "></div>
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+          ">${Math.round(userHeading)}°</div>
         </div>
         <style>
           @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 0.5; }
             100% { transform: scale(1); opacity: 1; }
           }
         </style>
       `,
       className: '',
-      iconSize: [40, 40],
-      iconAnchor: [20, 20]
+      iconSize: [50, 50],
+      iconAnchor: [25, 25]
     });
 
-    // Add user marker
+    // Add user marker with north arrow
     const marker = L.marker([userLocation.lat, userLocation.lng], {
-      icon: arrowIcon,
+      icon: northArrowIcon,
       zIndexOffset: 1000
     }).addTo(mapInstanceRef.current);
 
-    marker.bindPopup("Your Location");
+    marker.bindPopup(`
+      <div style="text-align: center;">
+        <strong>Your Location</strong><br>
+        <small>Heading: ${Math.round(userHeading)}°</small>
+      </div>
+    `);
     userMarkerRef.current = marker;
 
   }, [userLocation, userHeading]);
@@ -328,17 +362,89 @@ export default function EnhancedMapView({
     });
     locationMarkersRef.current = [];
 
-    // Add new location markers
+    // Add new location markers with directional indicators if available
     locations.forEach(location => {
-      const marker = L.marker([location.latitude, location.longitude])
-        .addTo(mapInstanceRef.current!)
-        .bindPopup(`
-          <div style="min-width: 150px;">
-            <p style="font-weight: 600; margin: 0 0 4px 0;">${location.title || "Graffiti Spot"}</p>
-            ${location.city ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${location.city}</p>` : ''}
-            <p style="margin: 0; font-size: 11px; color: #888;">${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}</p>
-          </div>
-        `);
+      // Check if location has heading data
+      const headings = (location as any).photoHeadings as number[] | undefined;
+      const primaryHeading = headings && headings.length > 0 ? headings[0] : null;
+      
+      let markerIcon;
+      if (primaryHeading !== null && primaryHeading > 0) {
+        // Create custom icon with directional indicator
+        markerIcon = L.divIcon({
+          html: `
+            <div style="
+              width: 35px;
+              height: 45px;
+              position: relative;
+            ">
+              <!-- Direction indicator -->
+              <div style="
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%) rotate(${primaryHeading}deg);
+                transform-origin: center 22px;
+              ">
+                <svg width="35" height="45" viewBox="0 0 35 45">
+                  <!-- Field of view arc -->
+                  <path d="M17.5,22 L10,5 A 15 15 0 0 1 25,5 Z" 
+                    fill="rgba(255, 102, 0, 0.3)" 
+                    stroke="rgba(255, 102, 0, 0.6)" 
+                    stroke-width="1"/>
+                </svg>
+              </div>
+              <!-- Standard marker pin -->
+              <div style="
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+              ">
+                <svg width="25" height="41" viewBox="0 0 25 41">
+                  <path d="M12.5,0 C5.6,0 0,5.6 0,12.5 C0,21.9 12.5,41 12.5,41 S25,21.9 25,12.5 C25,5.6 19.4,0 12.5,0 Z" 
+                    fill="#ff6600" 
+                    stroke="white" 
+                    stroke-width="2"/>
+                  <circle cx="12.5" cy="12.5" r="4" fill="white"/>
+                </svg>
+              </div>
+              <!-- Heading label -->
+              <div style="
+                position: absolute;
+                top: -8px;
+                right: -5px;
+                background: rgba(0,0,0,0.7);
+                color: white;
+                padding: 1px 3px;
+                border-radius: 8px;
+                font-size: 9px;
+                font-weight: bold;
+              ">${Math.round(primaryHeading)}°</div>
+            </div>
+          `,
+          className: '',
+          iconSize: [35, 45],
+          iconAnchor: [17.5, 41],
+          popupAnchor: [0, -41]
+        });
+      } else {
+        // Use default marker
+        markerIcon = new L.Icon.Default();
+      }
+      
+      const marker = L.marker([location.latitude, location.longitude], {
+        icon: markerIcon
+      }).addTo(mapInstanceRef.current!);
+      
+      marker.bindPopup(`
+        <div style="min-width: 150px;">
+          <p style="font-weight: 600; margin: 0 0 4px 0;">${location.title || "Graffiti Spot"}</p>
+          ${location.city ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${location.city}</p>` : ''}
+          ${primaryHeading ? `<p style="margin: 0 0 4px 0; font-size: 11px; color: #888;">📷 Heading: ${Math.round(primaryHeading)}°</p>` : ''}
+          <p style="margin: 0; font-size: 11px; color: #888;">${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}</p>
+        </div>
+      `);
       
       if (onMarkerClick) {
         marker.on('click', () => onMarkerClick(location));

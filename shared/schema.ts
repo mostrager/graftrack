@@ -36,6 +36,7 @@ export const graffitiLocations = pgTable("graffiti_locations", {
   description: text("description"),
   tags: jsonb("tags").$type<string[]>().notNull().default([]),
   photos: jsonb("photos").$type<string[]>().notNull().default([]),
+  photoHeadings: jsonb("photo_headings").$type<number[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
