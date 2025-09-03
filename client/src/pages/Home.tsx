@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraffitiLocation, User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import SimpleMapView from "@/components/SimpleMapView";
+import EnhancedMapView from "@/components/EnhancedMapView";
 import MobileHeader from "@/components/MobileHeader";
 import MobileNavBar from "@/components/MobileNavBar";
 import MobileProfilePanel from "@/components/MobileProfilePanel";
@@ -90,18 +90,15 @@ export default function Home() {
     if (isAddingLocation) {
       console.log("SETTING NEW MARKER POSITION:", lat, lng);
       setNewLocationPosition({ lat, lng });
-      console.log("OPENING ADD PANEL...");
-      setShowAddPanel(true);
       setIsAddingLocation(false);
-      console.log("showAddPanel should now be true");
+      // Small delay to ensure state updates properly
+      setTimeout(() => {
+        console.log("OPENING ADD PANEL...");
+        setShowAddPanel(true);
+      }, 100);
       toast({
         title: "Location Marked!",
-        description: "Red marker added - fill out the form below",
-      });
-    } else {
-      toast({
-        title: "Tap + First",
-        description: "Tap the + button first, then tap on the map",
+        description: "Fill out the details below",
       });
     }
   };
@@ -163,10 +160,11 @@ export default function Home() {
 
       {/* Map Container - Full Screen */}
       <div className="flex-1 relative z-0" style={{ paddingTop: '56px', paddingBottom: '64px' }}>
-        <SimpleMapView
+        <EnhancedMapView
           center={currentPosition}
           locations={locations}
           onMapClick={handleMapClick}
+          onMarkerClick={handleMarkerClick}
           isAddingLocation={isAddingLocation}
           tempMarkerPosition={newLocationPosition}
         />
@@ -203,6 +201,7 @@ export default function Home() {
           isOpen={showAddPanel}
           onClose={() => {
             setShowAddPanel(false);
+            setIsAddingLocation(false);
             setNewLocationPosition(null);
           }}
           currentPosition={newLocationPosition || currentPosition!}

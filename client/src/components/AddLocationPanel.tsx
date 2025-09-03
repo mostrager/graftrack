@@ -3,6 +3,7 @@ import { X, MapPin, RefreshCw, Camera, Trash2 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
 import { useToast } from "@/hooks/use-toast";
+import { extractExifData } from "@/lib/exif-utils";
 
 interface AddLocationPanelProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function AddLocationPanel({
   const [customTag, setCustomTag] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [photoHeadings, setPhotoHeadings] = useState<number[]>([]);
   const { toast } = useToast();
 
   const predefinedTags = ["Street Art", "Mural", "Tag", "Stencil", "Throw-up", "Piece"];
@@ -56,10 +58,23 @@ export default function AddLocationPanel({
     }
   };
 
-  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+  const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
     if (result.successful && result.successful.length > 0) {
       const newPhotoUrls = result.successful.map(file => file.uploadURL as string);
+      const newHeadings: number[] = [];
+      
+      // Try to extract EXIF heading from each photo
+      for (const file of result.successful) {
+        if (file.data instanceof File) {
+          const exifData = await extractExifData(file.data as File);
+          newHeadings.push(exifData.heading || 0);
+        } else {
+          newHeadings.push(0);
+        }
+      }
+      
       setUploadedPhotos(prev => [...prev, ...newPhotoUrls]);
+      setPhotoHeadings(prev => [...prev, ...newHeadings]);
       toast({
         title: "Success",
         description: `${result.successful.length} photo(s) uploaded successfully`,
@@ -69,6 +84,7 @@ export default function AddLocationPanel({
 
   const handleRemovePhoto = (index: number) => {
     setUploadedPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotoHeadings(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleToggleTag = (tag: string) => {
@@ -110,6 +126,7 @@ export default function AddLocationPanel({
       description: description.trim() || undefined,
       tags: selectedTags,
       photos: uploadedPhotos,
+      photoHeadings: photoHeadings.length > 0 ? photoHeadings : undefined,
     };
 
     console.log("Location data being saved:", locationData);
@@ -122,6 +139,7 @@ export default function AddLocationPanel({
     setCustomTag("");
     setSelectedTags([]);
     setUploadedPhotos([]);
+    setPhotoHeadings([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -235,12 +253,19 @@ export default function AddLocationPanel({
             <div className="mt-4 space-y-3">
               {uploadedPhotos.map((photoUrl, index) => (
                 <div key={index} className="flex items-center space-x-3 p-3 bg-card border border-border rounded-lg">
-                  <img 
-                    src={photoUrl} 
-                    alt={`Uploaded photo ${index + 1}`}
-                    className="w-16 h-16 rounded-lg object-cover"
-                    data-testid={`img-photo-preview-${index}`}
-                  />
+                  <div className="relative">
+                    <img 
+                      src={photoUrl} 
+                      alt={`Uploaded photo ${index + 1}`}
+                      className="w-16 h-16 rounded-lg object-cover"
+                      data-testid={`img-photo-preview-${index}`}
+                    />
+                    {photoHeadings[index] && photoHeadings[index] > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                        {Math.round(photoHeadings[index])}°
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">Photo {index + 1}</p>
                     <p className="text-xs text-muted-foreground">Uploaded successfully</p>
