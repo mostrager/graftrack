@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GrafTrack</string>
+    <string name="title_activity_main">GrafTrack</string>
+    <string name="package_name">com.graftrack.app</string>
+    <string name="custom_url_scheme">com.graftrack.app</string>
+</resources>
