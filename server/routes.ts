@@ -63,6 +63,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public shared location route (no auth required)
+  app.get("/api/locations/shared/:id", async (req, res) => {
+    try {
+      const location = await storage.getGraffitiLocation(req.params.id);
+      if (!location) {
+        return res.status(404).json({ error: "Location not found" });
+      }
+      res.json(location);
+    } catch (error) {
+      console.error("Error fetching shared location:", error);
+      res.status(500).json({ error: "Failed to fetch location" });
+    }
+  });
+
   // Get all graffiti locations for authenticated user
   app.get("/api/locations", isAuthenticated, async (req: any, res) => {
     try {

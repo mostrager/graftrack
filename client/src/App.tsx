@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/Home";
 import Landing from "@/pages/Landing";
+import SharedLocation from "@/pages/SharedLocation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/shared/:id" component={SharedLocation} />
       {!isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (

@@ -1,8 +1,9 @@
-import { X, Calendar, MapPin, Share, Download, Trash2, Edit } from "lucide-react";
+import { X, Calendar, MapPin, Download, Trash2, Edit } from "lucide-react";
 import { GraffitiLocation } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import ShareLocationButton from "@/components/ShareLocationButton";
 
 interface LocationDetailsPanelProps {
   isOpen: boolean;
@@ -62,24 +63,7 @@ export default function LocationDetailsPanel({
     }
   };
 
-  const handleShare = () => {
-    const shareData = {
-      title: "Graffiti Location",
-      text: `Check out this graffiti location: ${location.address || `${location.latitude}, ${location.longitude}`}`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      navigator.share(shareData);
-    } else {
-      // Fallback to clipboard
-      navigator.clipboard.writeText(`${shareData.text} - ${shareData.url}`);
-      toast({
-        title: "Link Copied",
-        description: "Location link copied to clipboard",
-      });
-    }
-  };
+  // Share is handled by ShareLocationButton component
 
   const handleGetDirections = () => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`;
@@ -117,6 +101,7 @@ export default function LocationDetailsPanel({
         <div className="flex items-center justify-between mb-2">
           <h3 className="heading font-semibold text-lg">Location Details</h3>
           <div className="flex items-center space-x-2">
+            <ShareLocationButton location={location} />
             <button 
               className="min-h-11 min-w-11 p-2 text-accent"
               data-testid="button-edit-location"
@@ -155,13 +140,6 @@ export default function LocationDetailsPanel({
                 {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
               </p>
             </div>
-            <button 
-              className="min-h-11 min-w-11 p-2 text-accent"
-              onClick={handleShare}
-              data-testid="button-share-location"
-            >
-              <Share className="w-5 h-5" />
-            </button>
           </div>
         </div>
 

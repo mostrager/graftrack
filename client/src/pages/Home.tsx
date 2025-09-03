@@ -9,6 +9,7 @@ import MobileProfilePanel from "@/components/MobileProfilePanel";
 import AddLocationPanel from "@/components/AddLocationPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
 import CompassButton from "@/components/CompassButton";
+import InstallAppPrompt from "@/components/InstallAppPrompt";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Target } from "lucide-react";
@@ -227,6 +228,9 @@ export default function Home() {
         locationCount={locations.length}
         onLogout={handleLogOut}
       />
+
+      {/* Install App Prompt */}
+      <InstallAppPrompt />
     </div>
   );
 }
