@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { X, MapPin, RefreshCw, Camera, Trash2 } from "lucide-react";
-import { ObjectUploader } from "@/components/ObjectUploader";
-import type { UploadResult } from "@uppy/core";
+import { MobilePhotoUploader } from "@/components/MobilePhotoUploader";
 import { useToast } from "@/hooks/use-toast";
 import { extractExifData } from "@/lib/exif-utils";
 
@@ -58,29 +57,8 @@ export default function AddLocationPanel({
     }
   };
 
-  const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful && result.successful.length > 0) {
-      const newPhotoUrls = result.successful.map(file => file.uploadURL as string);
-      const newHeadings: number[] = [];
-      
-      // Try to extract EXIF heading from each photo
-      for (const file of result.successful) {
-        if (file.data instanceof File) {
-          const exifData = await extractExifData(file.data as File);
-          newHeadings.push(exifData.heading || 0);
-        } else {
-          newHeadings.push(0);
-        }
-      }
-      
-      setUploadedPhotos(prev => [...prev, ...newPhotoUrls]);
-      setPhotoHeadings(prev => [...prev, ...newHeadings]);
-      toast({
-        title: "Success",
-        description: `${result.successful.length} photo(s) uploaded successfully`,
-      });
-    }
-  };
+  // This function is no longer needed with MobilePhotoUploader
+  // Photo upload is handled directly in the component
 
   const handleRemovePhoto = (index: number) => {
     setUploadedPhotos(prev => prev.filter((_, i) => i !== index));
@@ -234,19 +212,18 @@ export default function AddLocationPanel({
         <div className="mb-6">
           <label className="block text-sm font-medium mb-3">Photos (Optional)</label>
           
-          <ObjectUploader
+          <MobilePhotoUploader
             maxNumberOfFiles={5}
             maxFileSize={10485760}
             onGetUploadParameters={handleGetUploadParameters}
-            onComplete={handleUploadComplete}
-            buttonClassName="w-full"
-          >
-            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-              <Camera className="w-8 h-8 text-muted-foreground mb-3" />
-              <p className="text-sm font-medium mb-1">Tap to take photo or select from gallery</p>
-              <p className="text-xs text-muted-foreground">You can add multiple photos</p>
-            </div>
-          </ObjectUploader>
+            onUploadComplete={(urls) => {
+              setUploadedPhotos([...uploadedPhotos, ...urls]);
+              // Extract headings for new photos
+              const newHeadings = urls.map(() => 0); // Default to 0, will be updated if EXIF data exists
+              setPhotoHeadings([...photoHeadings, ...newHeadings]);
+            }}
+            existingPhotos={uploadedPhotos}
+          />
 
           {/* Photo Previews */}
           {uploadedPhotos.length > 0 && (
