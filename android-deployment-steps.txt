@@ -1,0 +1,89 @@
+ANDROID DEPLOYMENT CHECKLIST FOR GRAFTRACK
+==========================================
+
+Step 1: Install Android Studio (if not installed)
+--------------------------------------------------
+sudo snap install android-studio --classic
+# OR download from: https://developer.android.com/studio
+
+Step 2: Set up environment variables
+-------------------------------------
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+
+Step 3: Open project in Android Studio
+---------------------------------------
+npx cap open android
+
+Step 4: Generate Signed AAB (in Android Studio)
+------------------------------------------------
+1. Build → Generate Signed Bundle/APK
+2. Select "Android App Bundle"
+3. Create new keystore:
+   - Path: ~/graftrack-release.keystore
+   - Password: [choose secure password]
+   - Alias: graftrack
+   - Fill certificate info:
+     * Name: Your Name
+     * Organization: Your Company
+     * City, State, Country
+   - Validity: 25 years
+4. SAVE YOUR KEYSTORE SECURELY!
+
+Step 5: Google Play Console Setup
+----------------------------------
+1. Go to: https://play.google.com/console
+2. Pay $25 developer fee (one-time)
+3. Create new app:
+   - App name: GrafTrack
+   - Default language: English (US)
+   - App type: Application
+   - Category: Photography
+   - Free/Paid: Free
+
+Step 6: Store Listing Requirements
+-----------------------------------
+Required assets:
+- App icon: 512x512 PNG
+- Feature graphic: 1024x500 PNG
+- Screenshots: Min 2, max 8 (phone)
+- Short description: 80 characters max
+- Full description: 4000 characters max
+
+Step 7: Upload AAB
+-------------------
+1. Go to Production → Create new release
+2. Upload your app-release.aab file
+3. Add release notes
+4. Save and review
+
+Step 8: Content Rating
+-----------------------
+Complete questionnaire:
+- Category: Photography/Social
+- No violence/drugs/gambling
+- User interaction: Yes
+- Location sharing: Yes
+- Personal info: Email only
+
+Step 9: Pricing & Distribution
+-------------------------------
+- Countries: All available
+- Content guidelines: Check all
+- US export laws: Yes
+- Ad declaration: No ads
+
+Step 10: Submit for Review
+---------------------------
+- Review all sections
+- Fix any errors shown
+- Submit for review
+- Wait 2-24 hours for approval
+
+IMPORTANT FILES TO KEEP SAFE:
+- graftrack-release.keystore
+- Keystore password
+- Key alias and password
+- Google Play Console credentials
