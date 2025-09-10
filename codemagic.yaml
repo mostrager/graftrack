@@ -12,9 +12,8 @@ workflows:
       
       - name: Fix Java version in Capacitor
         script: |
-          if [ -f node_modules/@capacitor/android/capacitor/build.gradle ]; then
-            perl -pi -e 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle
-          fi
+          # Fix ALL capacitor plugins that have Java 21
+          find node_modules/@capacitor -name "build.gradle" -type f -exec perl -pi -e 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' {} \;
           
       - name: Build web app
         script: |
