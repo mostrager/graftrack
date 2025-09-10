@@ -1,0 +1,95 @@
+GRAFTRACK - PLAY STORE LISTING CONTENT
+========================================
+
+APP TITLE (30 chars max):
+GrafTrack - Street Art Finder
+
+SHORT DESCRIPTION (80 chars max):
+Discover, track, and share graffiti art locations with the street art community
+
+FULL DESCRIPTION (4000 chars max):
+----------------------------------
+🎨 GrafTrack - Your Ultimate Street Art Companion
+
+Discover hidden graffiti gems in your city and around the world! GrafTrack is the essential app for street art enthusiasts, photographers, and urban explorers who want to document and share the vibrant world of graffiti art.
+
+KEY FEATURES:
+
+📍 Interactive Map
+• Explore graffiti locations on a detailed map
+• See real-time compass direction and heading
+• Rotate map with two-finger gestures
+• Track your current location
+
+📸 Photo Documentation
+• Capture graffiti directly from your camera
+• Upload multiple photos per location
+• Extract GPS data from geotagged images
+• Share your discoveries with the community
+
+🔍 Smart Discovery
+• Filter locations by tags and categories
+• Search by artist name or style
+• View detailed information for each piece
+• Get directions to any graffiti spot
+
+👥 Community Features
+• Share locations with other users
+• Add descriptions and artist credits
+• Tag locations with relevant keywords
+• Build your personal collection
+
+🔒 Privacy & Security
+• Complete data isolation between users
+• Secure authentication system
+• Control what you share
+• Private and public viewing options
+
+⚡ Offline Support
+• Access previously viewed locations offline
+• Queue uploads for when you're back online
+• Never lose your discoveries
+
+Perfect for:
+• Street art photographers
+• Graffiti artists
+• Urban explorers
+• Art students
+• Tourism and culture enthusiasts
+• Anyone who appreciates street art
+
+GrafTrack respects the ephemeral nature of street art while helping preserve its memory through photography and location tracking. Document the ever-changing urban canvas and contribute to a global database of street art culture.
+
+Join thousands of street art enthusiasts worldwide. Download GrafTrack today and start exploring!
+
+Note: This app is for educational and cultural documentation purposes. Always respect local laws and property rights.
+
+KEYWORDS (comma separated):
+graffiti, street art, urban art, map, tracker, photography, art location, spray paint, mural, tags, bombing, piece, throw up, stencil, wheat paste
+
+CATEGORY:
+Photography
+
+CONTENT RATING:
+Everyone
+
+APP TYPE:
+Free
+
+CONTAINS ADS:
+No
+
+IN-APP PURCHASES:
+No
+
+COUNTRIES:
+All countries
+
+PRIVACY POLICY URL:
+[Your privacy policy URL]
+
+SUPPORT EMAIL:
+[Your support email]
+
+WEBSITE:
+[Your website URL]
