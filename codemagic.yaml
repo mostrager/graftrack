@@ -12,7 +12,7 @@ workflows:
       
       - name: Fix Java version in Capacitor
         script: |
-          sed -i '' 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle
+          sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle
           
       - name: Build web app
         script: |
