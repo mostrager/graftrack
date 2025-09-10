@@ -14,6 +14,10 @@ workflows:
         script: |
           # Fix ALL capacitor plugins that have Java 21
           find node_modules/@capacitor -name "build.gradle" -type f -exec perl -pi -e 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' {} \;
+          # Fix Kotlin JVM target version
+          find node_modules/@capacitor -name "build.gradle" -type f -exec perl -pi -e 's/jvmTarget = "21"/jvmTarget = "17"/g' {} \;
+          find node_modules/@capacitor -name "build.gradle" -type f -exec perl -pi -e "s/jvmTarget = '21'/jvmTarget = '17'/g" {} \;
+          find node_modules/@capacitor -name "build.gradle" -type f -exec perl -pi -e 's/jvmTarget\.set\("21"\)/jvmTarget.set("17")/g' {} \;
           
       - name: Build web app
         script: |
