@@ -14,7 +14,7 @@ export default function MobileNavBar({
   isAddingLocation 
 }: MobileNavBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border z-50 safe-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 safe-bottom">
       <div className="flex items-center justify-around h-16">
         {/* Map Tab */}
         <button 

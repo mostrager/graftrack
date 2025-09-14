@@ -13,7 +13,7 @@ import CompassButton from "@/components/CompassButton";
 import InstallAppPrompt from "@/components/InstallAppPrompt";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Target } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export default function Home() {
   const [isAddingLocation, setIsAddingLocation] = useState(false);
@@ -215,7 +215,7 @@ export default function Home() {
         {isAddingLocation && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div className="flex flex-col items-center">
-              <Target className={`w-8 h-8 ${addMode === "graffiti" ? "text-accent" : "text-red-500"} animate-pulse`} />
+              <Plus className={`w-16 h-16 ${addMode === "graffiti" ? "text-accent" : "text-red-500"} animate-pulse`} />
               <p className={`mt-2 px-4 py-2 ${addMode === "graffiti" ? "bg-accent/90 text-accent-foreground" : "bg-red-500/90 text-white"} rounded-full text-sm font-medium street-text`}>
                 {addMode === "graffiti" ? "TAP MAP TO MARK SPOT" : "TAP MAP TO MARK PROSPECT"}
               </p>

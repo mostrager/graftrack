@@ -6,7 +6,7 @@ interface MobileHeaderProps {
 
 export default function MobileHeader({ locationCount }: MobileHeaderProps) {
   return (
-    <div className="fixed top-0 left-0 right-0 bg-card/90 backdrop-blur-sm z-40 safe-top">
+    <div className="fixed top-0 left-0 right-0 bg-card z-40 safe-top">
       <div className="flex items-center justify-between px-4 h-14">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
