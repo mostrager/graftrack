@@ -23,7 +23,8 @@ export default function Home() {
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GraffitiLocation | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
+  // Default to New York City coordinates immediately
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 40.7128, lng: -74.0060 });
   const [newLocationPosition, setNewLocationPosition] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -99,11 +100,12 @@ export default function Home() {
     },
   });
 
-  // Get user's current position
+  // Try to get user's actual position (but start with default)
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          // Update to actual position if available
           setCurrentPosition({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -111,14 +113,11 @@ export default function Home() {
         },
         (error) => {
           console.error("Error getting location:", error);
-          // Default to New York City
-          setCurrentPosition({ lat: 40.7128, lng: -74.0060 });
+          // Keep default position
         }
       );
-    } else {
-      // Default to New York City
-      setCurrentPosition({ lat: 40.7128, lng: -74.0060 });
     }
+    // Keep default position if geolocation not available
   }, []);
 
   const handleMapClick = (lat: number, lng: number) => {
@@ -192,16 +191,7 @@ export default function Home() {
     window.location.href = "/api/logout";
   };
 
-  if (!currentPosition) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading map...</p>
-        </div>
-      </div>
-    );
-  }
+  // Remove loading state since currentPosition always has a value now
 
   return (
     <div className="h-screen w-full bg-background flex flex-col">
