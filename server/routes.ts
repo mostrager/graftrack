@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertGraffitiLocationSchema } from "@shared/schema";
+import { insertGraffitiLocationSchema, insertProspectSchema } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
@@ -171,6 +171,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting location:", error);
       res.status(500).json({ error: "Failed to delete location" });
+    }
+  });
+
+  // Get all prospects for authenticated user
+  app.get("/api/prospects", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prospects = await storage.getUserProspects(userId);
+      res.json(prospects);
+    } catch (error) {
+      console.error("Error fetching prospects:", error);
+      res.status(500).json({ error: "Failed to fetch prospects" });
+    }
+  });
+
+  // Get specific prospect
+  app.get("/api/prospects/:id", async (req, res) => {
+    try {
+      const prospect = await storage.getProspect(req.params.id);
+      if (!prospect) {
+        return res.status(404).json({ error: "Prospect not found" });
+      }
+      res.json(prospect);
+    } catch (error) {
+      console.error("Error fetching prospect:", error);
+      res.status(500).json({ error: "Failed to fetch prospect" });
+    }
+  });
+
+  // Create new prospect
+  app.post("/api/prospects", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertProspectSchema.parse({
+        ...req.body,
+        userId
+      });
+
+      const prospect = await storage.createProspect(validatedData);
+      res.status(201).json(prospect);
+    } catch (error) {
+      console.error("Error creating prospect:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid prospect data", details: error.message });
+      }
+      res.status(500).json({ error: "Failed to create prospect" });
+    }
+  });
+
+  // Update prospect
+  app.put("/api/prospects/:id", async (req, res) => {
+    try {
+      const validatedData = insertProspectSchema.partial().parse(req.body);
+      const updated = await storage.updateProspect(req.params.id, validatedData);
+      if (!updated) {
+        return res.status(404).json({ error: "Prospect not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating prospect:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid prospect data", details: error.message });
+      }
+      res.status(500).json({ error: "Failed to update prospect" });
+    }
+  });
+
+  // Delete prospect
+  app.delete("/api/prospects/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteProspect(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Prospect not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting prospect:", error);
+      res.status(500).json({ error: "Failed to delete prospect" });
     }
   });
 

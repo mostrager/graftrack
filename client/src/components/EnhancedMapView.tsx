@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
-import { GraffitiLocation } from "@shared/schema";
+import { GraffitiLocation, Prospect } from "@shared/schema";
 import "leaflet/dist/leaflet.css";
 import "leaflet-rotatedmarker";
 import { initializeMapRotation } from "@/lib/leaflet-rotate";
@@ -16,8 +16,10 @@ L.Icon.Default.mergeOptions({
 interface EnhancedMapViewProps {
   center: { lat: number; lng: number };
   locations: GraffitiLocation[];
+  prospects?: Prospect[];
   onMapClick: (lat: number, lng: number) => void;
   onMarkerClick?: (location: GraffitiLocation) => void;
+  onProspectClick?: (prospect: Prospect) => void;
   isAddingLocation: boolean;
   tempMarkerPosition?: { lat: number; lng: number } | null;
 }
@@ -25,8 +27,10 @@ interface EnhancedMapViewProps {
 export default function EnhancedMapView({ 
   center, 
   locations, 
+  prospects = [],
   onMapClick, 
   onMarkerClick,
+  onProspectClick,
   isAddingLocation,
   tempMarkerPosition
 }: EnhancedMapViewProps) {
@@ -35,6 +39,7 @@ export default function EnhancedMapView({
   const tempMarkerRef = useRef<L.Marker | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const locationMarkersRef = useRef<L.Marker[]>([]);
+  const prospectMarkersRef = useRef<L.Marker[]>([]);
   const [userHeading, setUserHeading] = useState<number>(0);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const watchIdRef = useRef<number | null>(null);
@@ -352,7 +357,7 @@ export default function EnhancedMapView({
     }
   }, [tempMarkerPosition]);
 
-  // Show saved locations
+  // Show saved locations (graffiti)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -362,76 +367,34 @@ export default function EnhancedMapView({
     });
     locationMarkersRef.current = [];
 
-    // Add new location markers with directional indicators if available
+    // Add new location markers with type icons
     locations.forEach(location => {
-      // Check if location has heading data
-      const headings = (location as any).photoHeadings as number[] | undefined;
-      const primaryHeading = headings && headings.length > 0 ? headings[0] : null;
-      
-      let markerIcon;
-      if (primaryHeading !== null && primaryHeading > 0) {
-        // Create custom icon with directional indicator
-        markerIcon = L.divIcon({
-          html: `
-            <div style="
-              width: 35px;
-              height: 45px;
-              position: relative;
-            ">
-              <!-- Direction indicator -->
-              <div style="
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%) rotate(${primaryHeading}deg);
-                transform-origin: center 22px;
-              ">
-                <svg width="35" height="45" viewBox="0 0 35 45">
-                  <!-- Field of view arc -->
-                  <path d="M17.5,22 L10,5 A 15 15 0 0 1 25,5 Z" 
-                    fill="rgba(255, 102, 0, 0.3)" 
-                    stroke="rgba(255, 102, 0, 0.6)" 
-                    stroke-width="1"/>
-                </svg>
-              </div>
-              <!-- Standard marker pin -->
-              <div style="
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-              ">
-                <svg width="25" height="41" viewBox="0 0 25 41">
-                  <path d="M12.5,0 C5.6,0 0,5.6 0,12.5 C0,21.9 12.5,41 12.5,41 S25,21.9 25,12.5 C25,5.6 19.4,0 12.5,0 Z" 
-                    fill="#ff6600" 
-                    stroke="white" 
-                    stroke-width="2"/>
-                  <circle cx="12.5" cy="12.5" r="4" fill="white"/>
-                </svg>
-              </div>
-              <!-- Heading label -->
-              <div style="
-                position: absolute;
-                top: -8px;
-                right: -5px;
-                background: rgba(0,0,0,0.7);
-                color: white;
-                padding: 1px 3px;
-                border-radius: 8px;
-                font-size: 9px;
-                font-weight: bold;
-              ">${Math.round(primaryHeading)}°</div>
-            </div>
-          `,
-          className: '',
-          iconSize: [35, 45],
-          iconAnchor: [17.5, 41],
-          popupAnchor: [0, -41]
-        });
-      } else {
-        // Use default marker
-        markerIcon = new L.Icon.Default();
-      }
+      // Get type emoji based on graffiti type
+      const typeEmoji = {
+        'Tag': '✏️',
+        'Throw': '💥',
+        'Burner': '🔥',
+        'Roller': '🎨'
+      }[location.type] || '🎨';
+
+      const markerIcon = L.divIcon({
+        html: `
+          <div style="
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fb923c;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-size: 18px;
+          ">${typeEmoji}</div>`,
+        className: 'custom-div-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      });
       
       const marker = L.marker([location.latitude, location.longitude], {
         icon: markerIcon
@@ -440,9 +403,9 @@ export default function EnhancedMapView({
       marker.bindPopup(`
         <div style="min-width: 150px;">
           <p style="font-weight: 600; margin: 0 0 4px 0;">${location.title || "Graffiti Spot"}</p>
+          <p style="margin: 0 0 4px 0; font-size: 12px; color: #fb923c; font-weight: 600;">${location.type}</p>
           ${location.city ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${location.city}</p>` : ''}
-          ${primaryHeading ? `<p style="margin: 0 0 4px 0; font-size: 11px; color: #888;">📷 Heading: ${Math.round(primaryHeading)}°</p>` : ''}
-          <p style="margin: 0; font-size: 11px; color: #888;">${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}</p>
+          ${location.description ? `<p style="margin: 4px 0; font-size: 12px;">${location.description}</p>` : ''}
         </div>
       `);
       
@@ -453,6 +416,58 @@ export default function EnhancedMapView({
       locationMarkersRef.current.push(marker);
     });
   }, [locations, onMarkerClick]);
+
+  // Show prospect markers
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove old prospect markers
+    prospectMarkersRef.current.forEach(marker => {
+      mapInstanceRef.current?.removeLayer(marker);
+    });
+    prospectMarkersRef.current = [];
+
+    // Add new prospect markers (red X)
+    prospects.forEach(prospect => {
+      const markerIcon = L.divIcon({
+        html: `
+          <div style="
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+          ">
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="8" x2="24" y2="24" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+              <line x1="24" y1="8" x2="8" y2="24" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>`,
+        className: 'custom-div-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+      
+      const marker = L.marker([prospect.latitude, prospect.longitude], {
+        icon: markerIcon
+      }).addTo(mapInstanceRef.current!);
+      
+      marker.bindPopup(`
+        <div style="min-width: 150px;">
+          <p style="font-weight: 600; margin: 0 0 4px 0; color: #dc2626;">Prospect Spot</p>
+          ${prospect.notes ? `<p style="margin: 4px 0; font-size: 12px;">${prospect.notes}</p>` : '<p style="margin: 4px 0; font-size: 12px; color: #888;">No notes</p>'}
+          ${prospect.city ? `<p style="margin: 0; font-size: 12px; color: #666;">${prospect.city}</p>` : ''}
+        </div>
+      `);
+      
+      if (onProspectClick) {
+        marker.on('click', () => onProspectClick(prospect));
+      }
+      
+      prospectMarkersRef.current.push(marker);
+    });
+  }, [prospects, onProspectClick]);
 
   // Update cursor for add mode
   useEffect(() => {

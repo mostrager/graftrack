@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GraffitiLocation, User } from "@shared/schema";
+import { GraffitiLocation, User, Prospect } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import EnhancedMapView from "@/components/EnhancedMapView";
 import MobileHeader from "@/components/MobileHeader";
 import MobileNavBar from "@/components/MobileNavBar";
 import MobileProfilePanel from "@/components/MobileProfilePanel";
 import AddLocationPanel from "@/components/AddLocationPanel";
+import AddProspectPanel from "@/components/AddProspectPanel";
 import LocationDetailsPanel from "@/components/LocationDetailsPanel";
 import CompassButton from "@/components/CompassButton";
 import InstallAppPrompt from "@/components/InstallAppPrompt";
@@ -16,7 +17,9 @@ import { Target } from "lucide-react";
 
 export default function Home() {
   const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [addMode, setAddMode] = useState<"graffiti" | "prospect">("graffiti");
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [showProspectPanel, setShowProspectPanel] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<GraffitiLocation | null>(null);
@@ -29,6 +32,11 @@ export default function Home() {
   // Fetch all locations
   const { data: locations = [], isLoading } = useQuery<GraffitiLocation[]>({
     queryKey: ["/api/locations"],
+  });
+
+  // Fetch all prospects
+  const { data: prospects = [] } = useQuery<Prospect[]>({
+    queryKey: ["/api/prospects"],
   });
 
   // Create location mutation
@@ -61,6 +69,36 @@ export default function Home() {
     },
   });
 
+  // Create prospect mutation
+  const createProspectMutation = useMutation({
+    mutationFn: async (prospectData: any) => {
+      const prospectWithUser = {
+        ...prospectData,
+        userId: user?.id,
+      };
+      const response = await apiRequest("POST", "/api/prospects", prospectWithUser);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/prospects"] });
+      setShowProspectPanel(false);
+      setIsAddingLocation(false);
+      setNewLocationPosition(null);
+      toast({
+        title: "Success",
+        description: "Prospect marked successfully!",
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating prospect:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save prospect. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Get user's current position
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -87,6 +125,7 @@ export default function Home() {
     console.log("=== MAP CLICKED ===");
     console.log("Coordinates:", lat, lng);
     console.log("isAddingLocation:", isAddingLocation);
+    console.log("addMode:", addMode);
     console.log("==================");
     
     if (isAddingLocation) {
@@ -95,12 +134,17 @@ export default function Home() {
       setIsAddingLocation(false);
       // Small delay to ensure state updates properly
       setTimeout(() => {
-        console.log("OPENING ADD PANEL...");
-        setShowAddPanel(true);
+        if (addMode === "graffiti") {
+          console.log("OPENING ADD GRAFFITI PANEL...");
+          setShowAddPanel(true);
+        } else {
+          console.log("OPENING ADD PROSPECT PANEL...");
+          setShowProspectPanel(true);
+        }
       }, 100);
       toast({
-        title: "Location Marked!",
-        description: "Fill out the details below",
+        title: addMode === "graffiti" ? "Location Marked!" : "Prospect Marked!",
+        description: addMode === "graffiti" ? "Fill out the details below" : "Add notes about this spot",
       });
     }
   };
@@ -140,6 +184,10 @@ export default function Home() {
     createLocationMutation.mutate(locationData);
   };
 
+  const handleSaveProspect = (prospectData: any) => {
+    createProspectMutation.mutate(prospectData);
+  };
+
   const handleLogOut = () => {
     window.location.href = "/api/logout";
   };
@@ -166,6 +214,7 @@ export default function Home() {
         <EnhancedMapView
           center={currentPosition}
           locations={locations}
+          prospects={prospects}
           onMapClick={handleMapClick}
           onMarkerClick={handleMarkerClick}
           isAddingLocation={isAddingLocation}
@@ -176,10 +225,40 @@ export default function Home() {
         {isAddingLocation && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div className="flex flex-col items-center">
-              <Target className="w-8 h-8 text-accent animate-pulse" />
-              <p className="mt-2 px-4 py-2 bg-accent/90 text-accent-foreground rounded-full text-sm font-medium street-text">
-                TAP MAP TO MARK SPOT
+              <Target className={`w-8 h-8 ${addMode === "graffiti" ? "text-accent" : "text-red-500"} animate-pulse`} />
+              <p className={`mt-2 px-4 py-2 ${addMode === "graffiti" ? "bg-accent/90 text-accent-foreground" : "bg-red-500/90 text-white"} rounded-full text-sm font-medium street-text`}>
+                {addMode === "graffiti" ? "TAP MAP TO MARK SPOT" : "TAP MAP TO MARK PROSPECT"}
               </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Mode Toggle */}
+        {isAddingLocation && (
+          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="bg-card border border-border rounded-full shadow-lg p-1 flex">
+              <button
+                onClick={() => setAddMode("graffiti")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  addMode === "graffiti" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="button-mode-graffiti"
+              >
+                🎨 Graffiti
+              </button>
+              <button
+                onClick={() => setAddMode("prospect")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  addMode === "prospect" 
+                    ? "bg-red-500 text-white" 
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="button-mode-prospect"
+              >
+                ❌ Prospect
+              </button>
             </div>
           </div>
         )}
@@ -210,6 +289,21 @@ export default function Home() {
           currentPosition={newLocationPosition || currentPosition!}
           onSave={handleSaveLocation}
           isLoading={createLocationMutation.isPending}
+        />
+      )}
+
+      {/* Add Prospect Panel */}
+      {(newLocationPosition || currentPosition) && (
+        <AddProspectPanel
+          isOpen={showProspectPanel}
+          onClose={() => {
+            setShowProspectPanel(false);
+            setIsAddingLocation(false);
+            setNewLocationPosition(null);
+          }}
+          currentPosition={newLocationPosition || currentPosition!}
+          onSave={handleSaveProspect}
+          isLoading={createProspectMutation.isPending}
         />
       )}
 

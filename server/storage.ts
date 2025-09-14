@@ -1,4 +1,4 @@
-import { users, graffitiLocations, type User, type UpsertUser, type GraffitiLocation, type InsertGraffitiLocation } from "@shared/schema";
+import { users, graffitiLocations, prospects, type User, type UpsertUser, type GraffitiLocation, type InsertGraffitiLocation, type Prospect, type InsertProspect } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -15,15 +15,25 @@ export interface IStorage {
   createGraffitiLocation(location: InsertGraffitiLocation): Promise<GraffitiLocation>;
   updateGraffitiLocation(id: string, location: Partial<InsertGraffitiLocation>): Promise<GraffitiLocation | undefined>;
   deleteGraffitiLocation(id: string): Promise<boolean>;
+  
+  // Prospect methods
+  getProspect(id: string): Promise<Prospect | undefined>;
+  getAllProspects(): Promise<Prospect[]>;
+  getUserProspects(userId: string): Promise<Prospect[]>;
+  createProspect(prospect: InsertProspect): Promise<Prospect>;
+  updateProspect(id: string, prospect: Partial<InsertProspect>): Promise<Prospect | undefined>;
+  deleteProspect(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private graffitiLocations: Map<string, GraffitiLocation>;
+  private prospects: Map<string, Prospect>;
 
   constructor() {
     this.users = new Map();
     this.graffitiLocations = new Map();
+    this.prospects = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -66,14 +76,19 @@ export class MemStorage implements IStorage {
   async createGraffitiLocation(insertLocation: InsertGraffitiLocation): Promise<GraffitiLocation> {
     const id = randomUUID();
     const location: GraffitiLocation = {
-      ...insertLocation,
       id,
       userId: insertLocation.userId ?? null,
-      createdAt: new Date(),
+      latitude: insertLocation.latitude,
+      longitude: insertLocation.longitude,
+      title: insertLocation.title,
+      type: insertLocation.type ?? 'Tag',
+      city: insertLocation.city ?? null,
       address: insertLocation.address ?? null,
       description: insertLocation.description ?? null,
       tags: (insertLocation.tags as string[]) ?? [],
       photos: (insertLocation.photos as string[]) ?? [],
+      photoHeadings: insertLocation.photoHeadings ? (insertLocation.photoHeadings as number[]) : null,
+      createdAt: new Date(),
     };
     this.graffitiLocations.set(id, location);
     return location;
@@ -90,6 +105,7 @@ export class MemStorage implements IStorage {
       description: updateData.description !== undefined ? updateData.description ?? null : existing.description,
       tags: updateData.tags !== undefined ? (updateData.tags as string[]) ?? [] : existing.tags,
       photos: updateData.photos !== undefined ? (updateData.photos as string[]) ?? [] : existing.photos,
+      photoHeadings: updateData.photoHeadings !== undefined ? (updateData.photoHeadings ? (updateData.photoHeadings as number[]) : null) : existing.photoHeadings,
     };
     this.graffitiLocations.set(id, updated);
     return updated;
@@ -97,6 +113,58 @@ export class MemStorage implements IStorage {
 
   async deleteGraffitiLocation(id: string): Promise<boolean> {
     return this.graffitiLocations.delete(id);
+  }
+
+  async getProspect(id: string): Promise<Prospect | undefined> {
+    return this.prospects.get(id);
+  }
+
+  async getAllProspects(): Promise<Prospect[]> {
+    return Array.from(this.prospects.values()).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async getUserProspects(userId: string): Promise<Prospect[]> {
+    return Array.from(this.prospects.values())
+      .filter(prospect => prospect.userId === userId)
+      .sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }
+
+  async createProspect(insertProspect: InsertProspect): Promise<Prospect> {
+    const id = randomUUID();
+    const prospect: Prospect = {
+      ...insertProspect,
+      id,
+      userId: insertProspect.userId ?? null,
+      createdAt: new Date(),
+      notes: insertProspect.notes ?? null,
+      city: insertProspect.city ?? null,
+      address: insertProspect.address ?? null,
+    };
+    this.prospects.set(id, prospect);
+    return prospect;
+  }
+
+  async updateProspect(id: string, updateData: Partial<InsertProspect>): Promise<Prospect | undefined> {
+    const existing = this.prospects.get(id);
+    if (!existing) return undefined;
+
+    const updated: Prospect = {
+      ...existing,
+      ...updateData,
+      notes: updateData.notes !== undefined ? updateData.notes ?? null : existing.notes,
+      city: updateData.city !== undefined ? updateData.city ?? null : existing.city,
+      address: updateData.address !== undefined ? updateData.address ?? null : existing.address,
+    };
+    this.prospects.set(id, updated);
+    return updated;
+  }
+
+  async deleteProspect(id: string): Promise<boolean> {
+    return this.prospects.delete(id);
   }
 }
 
@@ -142,11 +210,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createGraffitiLocation(insertLocation: InsertGraffitiLocation): Promise<GraffitiLocation> {
-    const locationData = {
-      ...insertLocation,
-      tags: insertLocation.tags || [],
-      photos: insertLocation.photos || [],
+    const locationData: any = {
+      latitude: insertLocation.latitude,
+      longitude: insertLocation.longitude,
+      title: insertLocation.title,
+      type: insertLocation.type || 'Tag',
+      userId: insertLocation.userId || null,
       city: insertLocation.city || null,
+      address: insertLocation.address || null,
+      description: insertLocation.description || null,
+      tags: Array.isArray(insertLocation.tags) ? insertLocation.tags : [],
+      photos: Array.isArray(insertLocation.photos) ? insertLocation.photos : [],
+      photoHeadings: insertLocation.photoHeadings ? (insertLocation.photoHeadings as number[]) : null,
     };
     const [location] = await db
       .insert(graffitiLocations)
@@ -165,6 +240,8 @@ export class DatabaseStorage implements IStorage {
     if (updateData.description !== undefined) cleanedData.description = updateData.description;
     if (updateData.tags !== undefined) cleanedData.tags = updateData.tags || [];
     if (updateData.photos !== undefined) cleanedData.photos = updateData.photos || [];
+    if (updateData.photoHeadings !== undefined) cleanedData.photoHeadings = updateData.photoHeadings ? (updateData.photoHeadings as number[]) : null;
+    if (updateData.type !== undefined) cleanedData.type = updateData.type;
     
     const [updated] = await db
       .update(graffitiLocations)
@@ -176,6 +253,61 @@ export class DatabaseStorage implements IStorage {
 
   async deleteGraffitiLocation(id: string): Promise<boolean> {
     const result = await db.delete(graffitiLocations).where(eq(graffitiLocations.id, id));
+    return true;
+  }
+
+  async getProspect(id: string): Promise<Prospect | undefined> {
+    const [prospect] = await db.select().from(prospects).where(eq(prospects.id, id));
+    return prospect;
+  }
+
+  async getAllProspects(): Promise<Prospect[]> {
+    const prospectList = await db.select().from(prospects).orderBy(prospects.createdAt);
+    return prospectList;
+  }
+
+  async getUserProspects(userId: string): Promise<Prospect[]> {
+    const prospectList = await db
+      .select()
+      .from(prospects)
+      .where(eq(prospects.userId, userId))
+      .orderBy(prospects.createdAt);
+    return prospectList;
+  }
+
+  async createProspect(insertProspect: InsertProspect): Promise<Prospect> {
+    const prospectData = {
+      ...insertProspect,
+      notes: insertProspect.notes || null,
+      city: insertProspect.city || null,
+      address: insertProspect.address || null,
+    };
+    const [prospect] = await db
+      .insert(prospects)
+      .values(prospectData)
+      .returning();
+    return prospect;
+  }
+
+  async updateProspect(id: string, updateData: Partial<InsertProspect>): Promise<Prospect | undefined> {
+    const cleanedData: any = {};
+    if (updateData.latitude !== undefined) cleanedData.latitude = updateData.latitude;
+    if (updateData.longitude !== undefined) cleanedData.longitude = updateData.longitude;
+    if (updateData.userId !== undefined) cleanedData.userId = updateData.userId;
+    if (updateData.notes !== undefined) cleanedData.notes = updateData.notes;
+    if (updateData.city !== undefined) cleanedData.city = updateData.city;
+    if (updateData.address !== undefined) cleanedData.address = updateData.address;
+    
+    const [updated] = await db
+      .update(prospects)
+      .set(cleanedData)
+      .where(eq(prospects.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProspect(id: string): Promise<boolean> {
+    const result = await db.delete(prospects).where(eq(prospects.id, id));
     return true;
   }
 }

@@ -19,6 +19,7 @@ export default function AddLocationPanel({
   onSave, 
   isLoading 
 }: AddLocationPanelProps) {
+  const [type, setType] = useState<"Tag" | "Throw" | "Burner" | "Roller">("Tag");
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
@@ -82,6 +83,7 @@ export default function AddLocationPanel({
 
   const handleSave = () => {
     console.log("=== SAVE BUTTON CLICKED ===");
+    console.log("Type:", type);
     console.log("Title:", title);
     
     if (!title.trim()) {
@@ -99,6 +101,7 @@ export default function AddLocationPanel({
     const locationData = {
       latitude: currentPosition.lat,
       longitude: currentPosition.lng,
+      type: type,
       title: title.trim(),
       city: city.trim() || undefined,
       description: description.trim() || undefined,
@@ -111,6 +114,7 @@ export default function AddLocationPanel({
     onSave(locationData);
     
     // Reset form
+    setType("Tag");
     setTitle("");
     setCity("");
     setDescription("");
@@ -184,12 +188,39 @@ export default function AddLocationPanel({
           </div>
         </div>
 
+        {/* Graffiti Type Selector */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-3">Graffiti Type *</label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["Tag", "Throw", "Burner", "Roller"] as const).map((grafType) => (
+              <button
+                key={grafType}
+                onClick={() => setType(grafType)}
+                className={`p-3 rounded-lg font-medium transition-all ${
+                  type === grafType
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary hover:bg-secondary/80"
+                }`}
+                data-testid={`button-type-${grafType.toLowerCase()}`}
+              >
+                <div className="text-lg mb-1">
+                  {grafType === "Tag" && "✏️"}
+                  {grafType === "Throw" && "💥"}
+                  {grafType === "Burner" && "🔥"}
+                  {grafType === "Roller" && "🎨"}
+                </div>
+                {grafType}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Title Field */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-3">Title *</label>
           <input 
             className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring focus:border-transparent" 
-            placeholder="Enter a title for this location..."
+            placeholder="Enter a title for this spot..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             data-testid="input-title"
