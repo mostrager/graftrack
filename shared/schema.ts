@@ -31,6 +31,7 @@ export const graffitiLocations = pgTable("graffiti_locations", {
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
   title: text("title").notNull(),
+  type: text("type").notNull().default("Tag"), // Tag, Throw, Burner, Roller
   city: text("city"),
   address: text("address"),
   description: text("description"),
@@ -40,7 +41,26 @@ export const graffitiLocations = pgTable("graffiti_locations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Prospects table for potential graffiti spots
+export const prospects = pgTable("prospects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  latitude: real("latitude").notNull(),
+  longitude: real("longitude").notNull(),
+  notes: text("notes"),
+  city: text("city"),
+  address: text("address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertGraffitiLocationSchema = createInsertSchema(graffitiLocations).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  type: z.enum(["Tag", "Throw", "Burner", "Roller"]).default("Tag"),
+});
+
+export const insertProspectSchema = createInsertSchema(prospects).omit({
   id: true,
   createdAt: true,
 });
@@ -49,3 +69,5 @@ export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type GraffitiLocation = typeof graffitiLocations.$inferSelect;
 export type InsertGraffitiLocation = z.infer<typeof insertGraffitiLocationSchema>;
+export type Prospect = typeof prospects.$inferSelect;
+export type InsertProspect = z.infer<typeof insertProspectSchema>;
